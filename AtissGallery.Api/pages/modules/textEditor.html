@@ -1,0 +1,31 @@
+﻿<div class="modules-text-editor bx-fill" module="textEditor" data-checked="true">
+    <button class="btn-flat bx-pos-absolute bx-pos-top-far" onclick="textEditor.showDialog(this, event)"><i class="fa fa-edit" aria-hidden="true"></i></button>
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="textEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <div class="bx-fill">
+            <div class="bx-bar">
+                <span data-bind="text: Strings('text-editor')" class="padding-6-9"></span>
+            </div>
+        </div>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body">
+        <form method="post" class="bx-fill-h">
+            <textarea id="mytextarea">Hello, World!</textarea>
+        </form>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div></div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat btn-flat-success bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="textEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="textEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/tools/tinymce/tinymce.min.js"></script>
+
+<script type="text/javascript" src="js/modules/textEditor.js"></script>
+

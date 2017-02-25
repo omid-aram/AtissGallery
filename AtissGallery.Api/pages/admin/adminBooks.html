@@ -1,0 +1,43 @@
+﻿<div id="admin-books-buttons" class="bx-bar padding-9-0">
+    <button class="btn-flat" onclick="adminBooks.showPageBannerEditor(this, event)"><i class="fa fa-edit" aria-hidden="true"></i><span data-bind="text: Strings('page-banner-management')"></span></button>
+</div>
+<div class="atiss-admin-books">
+</div>
+
+<script type="text/javascript">
+    function AdminBooks() {
+        var self = this;
+
+        self.init = function () {
+            if (!app.user.isAuthenticated) {
+                appCommon.goHome();
+            }
+
+            appCommon.loadHtml('.atiss-admin-books', 'pages/books.html', function () {
+                appCommon.fetchModules(['pageBannerEditor', 'bannerEditor', 'menuEditor']);
+            });
+
+            appCommon.evalBindings('#admin-books-buttons');
+        }
+
+        self.showPageBannerEditor = function (sender, event) {
+            //debugger;
+            if (window['books'] && window['banner']) {
+                pageBannerEditor.showDialog(sender, event, 'books', 1003, adminBooks.refreshPage);
+            }
+        };
+
+        self.refreshPage = function () {
+            //debugger;
+            appCommon.evalBindings('.atiss-admin-books');
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var adminBooks = new AdminBooks();
+
+    var _pageTitle = Strings('brand-title') + ' - ' + Strings('admin-control-panel');
+</script>

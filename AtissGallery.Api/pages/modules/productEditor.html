@@ -1,0 +1,293 @@
+﻿<div class="bx-pos-absolute bx-pos-top-far" module="productEditor" editor-of="productThumbnail" data-checked="true">
+    <button class="btn-flat" onclick="productEditor.showDialog(this, event)"><i class="fa fa-address-card" aria-hidden="true"></i></button>
+</div>
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="productEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('product-editor')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <div class="bx-bar" data-loop="productEditor.FullProducts">
+            <button data-loop-template="true" data-bind="text: #item.MaterialLabel.KeyCode" data-attr="product-id: #item.Id" onclick="productEditor.btnSelectorClick(this)"></button>
+        </div>
+        <div class="bx-bar">
+            <module type="mediaSelector"></module>
+            <div class="bx-bar bx-xxs-1-1 bx-xs-1-3 padding-3-6">
+                <span data-bind="text: Strings('product-code')"></span>
+                <input class="bx-fill bx-ltr bx-text-center" type="text" data-bind="val: productEditor.SelectedProduct.Code" onchange="appCommon.evalBack(this)" />
+            </div>
+            <div class="bx-bar bx-xxs-1-1 bx-xs-1-3 padding-3-6">
+                <span data-bind="text: Strings('product-price')"></span>
+                <input class="bx-fill" type="number" step="10000" data-bind="val: productEditor.SelectedProduct.Price" onchange="appCommon.evalBack(this)" />
+            </div>
+            <div class="bx-bar bx-xxs-1-1 bx-xs-1-3 padding-3-6">
+                <span data-bind="text: Strings('product-count')"></span>
+                <input class="bx-fill" type="number" step="10" data-bind="val: productEditor.SelectedProduct.Count" onchange="appCommon.evalBack(this)" />
+            </div>
+            <div class="bx-bar bx-xxs-1-1 padding-3-6">
+                <div class="bx-xxs-1-1 bx-xs-1-2">
+                    <span class="bx-fill" data-bind="text: Strings('header-media')"></span>
+                    <div class="bx-fill bx-wrapper bx-ratio-1-1" onclick="productEditor.openMediaSelector(this, event)">
+                        <div class="bx-bar background-image-cover border-white-1">
+                            <module type="media" view-mode="image-only" data-attr="media-id: productEditor.SelectedProduct.CoverMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                        </div>
+                    </div>
+                </div>
+                <div class="bx-xxs-1-1 bx-xs-1-2" id="divOtherMedias">
+                    <span class="bx-fill" data-bind="text: Strings('other-medias')"></span>
+                    <div data-loop="productEditor.SelectedProduct.MediaIds" class="bx-bar">
+                        <div data-loop-stick="last" class="bx-xxs-1-3 bx-wrapper bx-ratio-1-1" onclick="mediaSelector.showDialog(this, event, productEditor.addOtherMedia)">
+                            <div class="bx-bar border-whitesmoke-1">
+                                <img src="/html/design/no-image-slide.png" class="bx-fill" />
+                            </div>
+                        </div>
+                        <div data-loop-template="true" class="bx-xxs-1-3 bx-wrapper bx-ratio-1-1">
+                            <div class="bx-bar border-whitesmoke-1">
+                                <module type="media" view-mode="back-cover" data-attr="media-id: #item" data-bind="attr: {'data-checked': ''}"></module>
+                                <button class="btn-flat bx-pos-absolute bx-pos-top-left" onclick="productEditor.removeOtherMedia(this, event)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bx-bar bx-xxs-1-1 bx-ltr" data-loop="productEditor.getChildLabels()">
+                <label data-loop-template="true" class="padding-9"><input type="checkbox" data-bind="val: #item.Id :: do: productEditor.setLabelChecked(this)" /><span data-bind="text: #item.KeyCode"></span><div class="bx-spacer"></div></label>
+            </div>
+            <div class="bx-bar bx-xxs-1-1 padding-3-6">
+                <div class="bx-fill" data-bind="text: Strings('description')"></div>
+                <div class="bx-xxs-1-1 bx-xs-1-2 bx-rtl">
+                    <module type="textEditor" content-selector="#myContentFa" adding-class="bx-rtl"></module>
+                    <div id="myContentFa" contenteditable="true" class="bx-fill border-whitesmoke-1 min-height-50" data-bind="html: productEditor.SelectedProduct.TextFa" onchange="appCommon.evalBack(this)" oninput="appCommon.evalBack(this)"></div>
+                </div>
+                <div class="bx-xxs-1-1 bx-xs-1-2 bx-ltr">
+                    <module type="textEditor" content-selector="#myContentEn" adding-class="bx-ltr"></module>
+                    <div id="myContentEn" contenteditable="true" class="bx-fill border-whitesmoke-1 min-height-50" data-bind="html: productEditor.SelectedProduct.TextEn" onchange="appCommon.evalBack(this)" oninput="appCommon.evalBack(this)"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="productEditor.deleteProduct(this)"><i class="fa fa-minus-circle"></i></button>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="productEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="productEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function ProductEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.FullProducts = [];
+        self.SelectedProduct = {};
+        self.refElement;
+        self.refMediaElement;
+
+        self.callback = null;
+
+        var dialogSelector = '#productEditorDialog';
+
+        self.init = function () {
+            appCommon.fetchModules(['mediaSelector', 'media', 'textEditor']);
+
+            $(dialogSelector).find('.tab-container [tab-selector].selected').click();
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event, callback) {
+            //debugger;
+            if (event) {
+                event.stopPropagation();
+            }
+
+            self.callback = callback;
+            self.refElement = $(sender).parents('[module = "productThumbnail"]');
+            var productCode = self.refElement.attr('product-code');
+            $(dialogSelector).attr('product-code', productCode);
+
+            if (!productThumbnail.FullProducts[productCode] || productThumbnail.FullProducts[productCode].length == 0) {
+                productThumbnail.fetchFullProduct(productCode, productEditor.fullProductFetched);
+            } else {
+                productEditor.fullProductFetched();
+            }
+        };
+
+        self.fullProductFetched = function () {
+            //debugger;
+            var productCode = self.refElement.attr('product-code');
+
+            //self.FullProducts = {
+            //    Id: -1,
+            //    CoverMediaId: -1,
+            //    Code: '',
+            //    NameFa: '',
+            //    NameEn: '',
+            //    TextFa: '',
+            //    TextEn: '',
+            //    MediaIds: [],
+            //    LabelIds: []
+            //};
+
+            if (productThumbnail.FullProducts[productCode]) {
+                self.FullProducts = jQuery.extend(true, [], productThumbnail.FullProducts[productCode]);
+            }
+            self.SelectedProduct = self.FullProducts[0];
+
+            //Filling Labels
+            //for (var i = 0; i < app.MasterLabels.length; i++) {
+            //    var labelId = app.Labels[i]['Id'];
+            //    var item = self.SelectedProduct.LabelIds.findItem(labelId);
+
+            //    if (!item) {
+            //        self.SelectedProduct.LabelIds.push({ 'Id': labelId });
+            //        item = self.SelectedProduct.LabelIds.findItem(labelId);
+            //    }
+            //}
+            appCommon.evalBindings(dialogSelector);
+
+            appCommon.showDialog(dialogSelector);
+        }
+
+        self.getChildLabels = function () {
+            //debugger;
+            var result = [];
+            for (var i = 0; i < app.Labels.length; i++) {
+                if (app.Labels[i].MasterKeyCode) {
+                    result.push(app.Labels[i]);
+                }
+            }
+            return result;
+        };
+
+        self.setLabelChecked = function (sender) {
+            var $sender = $(sender);
+            var labelId = $sender.val();
+            $sender.attr('checked', self.SelectedProduct.LabelIds.findIndex(labelId) < 0 ? null : 'checked');
+        };
+
+        self.getLabelChecked = function () {
+            var $checkboxes = $(dialogSelector).find('input:checkbox:checked');
+            self.SelectedProduct.LabelIds = [];
+            $checkboxes.each(function(){
+                var labelId = $(this).val();
+                self.SelectedProduct.LabelIds.push(labelId);
+            });
+        };
+
+        self.btnSelectorClick = function (sender) {
+            //debugger;
+            var productId = $(sender).attr('product-id');
+
+            self.SelectedProduct = self.FullProducts.findItem(productId, 'Id');
+
+            appCommon.evalBindings(dialogSelector);
+        };
+
+        self.openMediaSelector = function (sender, event) {
+            //self.refMediaElement = sender;
+            self.refMediaElement = $(sender).find('[module = "media"]');
+            mediaSelector.showDialog(sender, event, productEditor.setSelectedMedia);
+        };
+
+        self.setSelectedMedia = function (selectedMedia) {
+            //debugger;
+            if (self.refMediaElement && self.refMediaElement.length && window.media) {
+                self.refMediaElement.attr('media-id', selectedMedia.Id);
+                appCommon.evalBackAttr(self.refMediaElement);
+                self.refMediaElement.attr('data-checked', 'false');
+            }
+        };
+
+        self.addOtherMedia = function (selectedMedia) {
+            //debugger;
+            if (selectedMedia) {
+                self.SelectedProduct.MediaIds.push(selectedMedia.Id);
+                appCommon.evalBindings(dialogSelector + ' #divOtherMedias');
+            }
+        };
+
+        self.removeOtherMedia = function (sender, event) {
+            var mediaId = $(sender).parent().children('[module="media"]').attr('media-id');
+            if (mediaId /*&& confirm('Are you sure to delete this Other Media?')*/) {
+                //debugger;
+                self.SelectedProduct.MediaIds.removeItem(mediaId);
+                appCommon.evalBindings(dialogSelector + ' #divOtherMedias');
+            }
+        };
+
+        self.cancel = function (sender) {
+            self.SelectedProduct = {};
+            self.FullProducts = [];
+            appCommon.closeDialog(sender);
+        };
+
+        self.ok = function (sender) {
+            //debugger;
+            if (self.SelectedProduct) {
+                self.getLabelChecked();
+
+                $.post("/api/Product/PostProduct/", self.SelectedProduct)
+                    .done(function (data) {
+                        //productEditor.SelectedProduct.Id = data;
+                        //self.refElement.attr('product-id', productEditor.SelectedProduct.Id);
+
+                        //refreshing media
+                        productThumbnail.FullProducts[productEditor.SelectedProduct.Code] = [];
+                        appCommon.evalBindings(self.refElement);
+
+                        //if (window.products) {
+                        //    window.products.fetchNewerProducts();
+                        //}
+
+                        productEditor.cancel(sender);
+
+                        appCommon.reloadPage();
+
+                    }).fail(function (data) {
+                        debugger;
+                        alert("productEditor.postProduct() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.deleteProduct = function (sender) {
+            if (!self.SelectedProduct || self.SelectedProduct.Id < 0) {
+                alert('There is no product to delete.');
+                return;
+            }
+
+            if (confirm('Are you sure to delete this product?')) {
+
+                $.post("/api/Product/DeleteProduct/", self.SelectedProduct)
+                    .done(function (data) {
+
+                        if (self.callback) {
+                            self.callback({});
+                        }
+
+                        $(self.refElement).parents('#loopItem').remove();
+
+                        productEditor.cancel(sender);
+
+                    }).fail(function (data) {
+                        debugger;
+                        alert("Product cannot be deleted because it is maybe in use. \n\n\nFor more detail: \n" + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        return self;
+    };
+
+    var productEditor = new ProductEditor();
+
+</script>

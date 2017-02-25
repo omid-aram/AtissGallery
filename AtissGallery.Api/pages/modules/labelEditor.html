@@ -1,0 +1,179 @@
+﻿<div module="labelEditor" data-checked="true">
+</div>
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="labelEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('label-editor')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <table class="bx-fill">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="bx-xxs-1-4" data-bind="text: Strings('keycode')"></th>
+                    <th class="bx-xxs-1-4" data-bind="text: Strings('text-fa')"></th>
+                    <th class="bx-xxs-1-4" data-bind="text: Strings('text-en')"></th>
+                    <th class="bx-xxs-1-4" data-bind="text: Strings('master-keycode')"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-loop="labelEditor.Labels">
+                <tr data-loop-template="true" data-attr="label-id: #item.Id :: index: #index">
+                    <td><span data-bind="text: #index + 1"></span></td>
+                    <td><input type="text" class="bx-fill bx-ltr" data-bind="val: #item.KeyCode" onchange="appCommon.evalBack(this)" /></td>
+                    <td><input type="text" class="bx-fill" data-bind="val: #item.NameFa" onchange="appCommon.evalBack(this)" /></td>
+                    <td><input type="text" class="bx-fill bx-ltr" data-bind="val: #item.NameEn" onchange="appCommon.evalBack(this)" /></td>
+                    <td><input type="text" class="bx-fill bx-ltr" data-bind="val: #item.MasterKeyCode" onchange="appCommon.evalBack(this)" /></td>
+                    <td><button class="btn-flat" onclick="labelEditor.moveUp(this)"><i class="fa fa-arrow-up"></i></button></td>
+                    <td><button class="btn-flat" onclick="labelEditor.moveDown(this)"><i class="fa fa-arrow-down"></i></button></td>
+                    <td><button class="btn-flat" onclick="labelEditor.remove(this)"><i class="fa fa-minus-circle"></i></button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="labelEditor.add(this)"><i class="fa fa-plus-circle"></i></button>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="labelEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="labelEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function LabelEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.Labels = [];
+        self.MasterLabels = function () {
+            var result = [];
+            for (var i = 0; i < self.Labels.length; i++) {
+                var label = self.Labels[i];
+                if (!label.MasterId) {
+                    result.push(label);
+                }
+            }
+            return result;
+        };
+
+        self.refElement;
+        self.callback = null;
+
+        var dialogSelector = '#labelEditorDialog';
+
+        self.init = function () {
+            //appCommon.fetchModules(['textEditor', 'fileUploader']);
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event, callback) {
+            //debugger;
+            self.Labels = jQuery.extend(true, [], app.Labels);
+            self.callback = callback;
+            self.refElement = $(sender);
+
+            appCommon.evalBindings(dialogSelector);
+
+            appCommon.showDialog(dialogSelector, event);
+        }
+
+        self.add = function (sender) {
+            $.post("/api/Label/CreateLabel/")
+                .done(function (data) {
+                    app.Labels.push({ Id: data, NameFa: '', NameEn: '' });
+                    labelEditor.Labels.push({ Id: data, NameFa: '', NameEn: '' });
+                    appCommon.evalBindings(dialogSelector);
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("labelEditor.add() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.remove = function (sender) {
+            if (!confirm('Are you sure to delete this label?')) return;
+
+            var tr = $(sender).closest('tr');
+            var labelId = tr.attr('label-id');
+            if (labelId) {
+                $.post("/api/Label/DeleteLabel/", { Id: labelId })
+                    .done(function (data) {
+                        tr.remove();
+                        app.Labels.removeItem(labelId, 'Id');
+                        labelEditor.Labels.removeItem(labelId, 'Id');
+                        //for (var i = 0; i < self.Labels.length; i++) {
+                        //    if (self.Labels[i].Id == labelId) {
+                        //        self.Labels.splice(i, 1);
+                        //        break;
+                        //    }
+                        //}
+                        //for (var i = 0; i < app.Labels.length; i++) {
+                        //    if (app.Labels[i].Id == labelId) {
+                        //        app.Labels.splice(i, 1);
+                        //        break;
+                        //    }
+                        //}
+                        appCommon.evalBindings(dialogSelector);
+                    })
+                    .fail(function (data) {
+                        debugger;
+                        alert("labelEditor.remove() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.moveUp = function (sender) {
+            var index = parseInt($(sender).closest('tr').attr('index'));
+            if (index > 0) {
+                self.Labels.move(index, index - 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.moveDown = function (sender) {
+            var index = parseInt($(sender).closest('tr').attr('index'));
+            if (index < self.Labels.length - 1) {
+                self.Labels.move(index, index + 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.ok = function (sender) {
+            for (var i = 0; i < self.Labels.length; i++) {
+                self.Labels[i]['ViewOrder'] = i;
+            }
+            $.post("/api/Label/UpdateLabels/", { List: self.Labels })
+                .done(function (data) {
+                    //alert("Success");
+                    app.Labels = jQuery.extend(true, [], labelEditor.Labels);
+
+                    if (self.callback) {
+                        self.callback(labelEditor.Labels);
+                    }
+
+                    labelEditor.cancel(sender);
+                }).fail(function (data) {
+                    debugger;
+                    alert("labelEditor.update() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.cancel = function (sender) {
+            appCommon.closeDialog(sender);
+        };
+
+        return self;
+    }
+
+    var labelEditor = new LabelEditor();
+</script>

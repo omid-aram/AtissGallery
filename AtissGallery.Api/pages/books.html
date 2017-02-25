@@ -1,0 +1,52 @@
+﻿<div class="atiss-books bx-bar" page-id="1003" data-loop="books.PageBannerIds">
+    <module data-loop-template="true" type="banner" data-attr="banner-id: #item :: data-checked: 'false'"></module>
+</div>
+
+<script type="text/javascript">
+    function Books() {
+        var self = this;
+        var TempBanners = [];
+
+        self.PageBannerIds = [];
+
+        self.init = function () {
+            appCommon.fetchModules(['banner']);
+
+            var pageId = $('.atiss-books').attr('page-id');
+
+            $.get("/api/Banner/GetPageBanners/" + pageId)
+                .done(function (data) {
+                    TempBanners = data;
+                    loadBanners();
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("books.getPageBanners() Fail: " + data.message);
+                });
+
+            $(document).off('scroll');
+        };
+
+        var loadBanners = function () {
+            if (!window['banner']) {
+                setTimeout(loadBanners, 100);
+                return;
+            }
+
+            for (var i = 0; i < TempBanners.length; i++) {
+                books.PageBannerIds.push(TempBanners[i].Id);
+                window['banner'].Banners[TempBanners[i].Id] = TempBanners[i];
+            }
+
+            appCommon.evalBindings('.atiss-books');
+        }
+
+        self.init();
+
+        return self;
+    }
+
+    var books = new Books();
+
+    var _pageTitle = Strings('brand-title');// + ' - ' + strings('menu-home');
+</script>

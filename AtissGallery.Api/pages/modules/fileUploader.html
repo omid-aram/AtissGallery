@@ -1,0 +1,59 @@
+﻿<div module="fileUploader" data-checked="true">
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="fileUploaderDialog">
+    <div class="popup-dialog-header bx-fix">
+        <div class="bx-fill">
+            <div class="bx-bar">
+                <img src="design/loading.gif" alt="Loading..." class="loading-image height-24" />
+                <span data-bind="text: Strings('file-uploader')" class="padding-6-9"></span>
+            </div>
+        </div>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body">
+        <div class="bx-fix">
+            <div class="btn-uploader width-35"><i class="fa fa-plus fa-2x" aria-hidden="true"></i></div>
+            <div class="bx-fill-wh">
+                <div class="uploader-progress"></div>
+            </div>
+        </div>
+        <div class="bx-bar" data-loop-keep="fileUploader.files">
+            <!--<div data-template="true">-->
+                <div data-loop-template="true" class="bx-xxs-1-3 bx-md-1-6 bx-wrapper bx-ratio-1-1 mouse-hover-sky">
+                    <div class="bx-bar background-image-cover border-white-1" id="loopItem" data-bind-once="attr: {'file-json': JSON.stringify(#item)} :: css: {'background-image': 'url(\'' + #item.Cover + '\')'}"
+                         onclick="fileUploader.selectFile(this)">
+                        <div data-if="#item.ContentType == 'video/mp4'">
+                            <div class="bx-pos-absolute bx-pos-top-right"><i class="fa fa-video-camera bx-whitesmoke" aria-hidden="true"></i></div>
+                        </div>
+                        <button class="btn-flat bx-pos-absolute bx-pos-top-left" onclick="fileUploader.deleteFile(this, event)"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+            <!--</div>-->
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+        </div>
+        <div class="bx-bar width-120">
+            <button class="btn-flat bx-xxs-1-1" data-bind="text: Strings('button-cancel')" onclick="appCommon.closeDialog(this)"></button>
+        </div>
+    </div>
+</div>
+
+
+<style type="text/css">
+    .uploader-progress {
+        display: none;
+        background-color: darkblue;
+        height: 3px;
+    }
+    /*.uploader-thumbnails-container{
+        height: 100%;
+        overflow: auto;
+    }*/
+</style>
+
+<script type="text/javascript" src="js/tools/fine-uploader.core.js"></script>
+
+<script type="text/javascript" src="js/modules/fileUploader.js"></script>

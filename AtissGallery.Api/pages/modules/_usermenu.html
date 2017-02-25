@@ -1,0 +1,19 @@
+<div class="atiss-usermenu authenticated-needed back-color-silver">
+    <div class="bx-fix">
+        <a class="no-wrap padding-9" href="login"><i class="fa fa-user-o" aria-hidden="true"></i><span data-bind="text: app.user.FullName"></span></a>
+        <div class="bx-spacer"></div>
+        <!--<a onclick="appCommon.popupMenu(this, event)" popup="#adminControlPanel" position="top"><i class="fa fa-wrench" aria-hidden="true"></i><span data-bind="text: Strings('admin-control-panel')"></span></a>-->
+        <a class="no-wrap padding-9" href="admin/panel"><i class="fa fa-dashboard" aria-hidden="true"></i><span data-bind="text: Strings('admin-control-panel')"></span></a>
+        <div class="bx-fill"></div>
+        <a class="no-wrap padding-9" onclick="app.logout()"><i class="fa fa-sign-out" aria-hidden="true"></i><span data-bind="text: Strings('logout')"></span></a>
+    </div>
+    <!--<div class="popup-menu" id="adminControlPanel">
+        <ul class="bx-bar top-menu" data-loop="_usermenu.adminMenus">
+            <li data-loop-template="true">
+                <a href="#" data-bind="text: Strings(#item.name):: attr: { href: #item.href }"></a>
+            </li>
+        </ul>
+    </div>-->
+</div>
+
+<script type="text/javascript" src="js/modules/_usermenu.js"></script>

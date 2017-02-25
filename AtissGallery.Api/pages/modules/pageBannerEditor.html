@@ -1,0 +1,218 @@
+﻿<div module="pageBannerEditor" data-checked="true">
+</div>
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="pageBannerEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('page-banner-management')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <table class="bx-fill">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th class="bx-xxs-1-9" data-bind="text: Strings('first-media')"></th>
+                    <th class="bx-xxs-1-9" data-bind="text: Strings('second-media')"></th>
+                    <th class="bx-xxs-1-9" data-bind="text: Strings('third-media')"></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-loop="pageBannerEditor.PageBanners">
+                <tr data-loop-template="true" data-attr="banner-id: #item.Id :: index: #index">
+                    <td><span data-bind="text: #index + 1"></span></td>
+                    <td>
+                        <select data-bind="val: #item.BannerTypeId" onchange="pageBannerEditor.bannerTypeChanged(this, event)">
+                            <option value="11" data-bind="text: Strings('banner-single')"></option>
+                            <option value="21" data-bind="text: Strings('banner-double-sf')"></option>
+                            <option value="22" data-bind="text: Strings('banner-double-eq')"></option>
+                            <option value="23" data-bind="text: Strings('banner-double-ss')"></option>
+                            <option value="33" data-bind="text: Strings('banner-triple-eq')"></option>
+                        </select>
+                    </td>
+                    <td>
+                        <div class="bx-fill bx-wrapper bx-ratio-1-1">
+                            <div class="bx-bar background-image-cover border-white-1">
+                                <module type="media" view-mode="image-only" data-attr="media-id: #item.FirstMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="bx-fill bx-wrapper bx-ratio-1-1" data-bind="css: {display: #item.BannerTypeId > 20 ? '' : 'none'}">
+                            <div class="bx-bar background-image-cover border-white-1">
+                                <module type="media" view-mode="image-only" data-attr="media-id: #item.SecondMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="bx-fill bx-wrapper bx-ratio-1-1" data-bind="css: {display: #item.BannerTypeId > 30 ? '' : 'none'}">
+                            <div class="bx-bar background-image-cover border-white-1">
+                                <module type="media" view-mode="image-only" data-attr="media-id: #item.ThirdMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <select data-bind="val: #item.Enabled" onchange="appCommon.evalBack(this)">
+                            <option value="0" data-bind="text: Strings('disabled')"></option>
+                            <option value="1" data-bind="text: Strings('enabled')"></option>
+                        </select>
+                    </td>
+                    <td><button class="btn-flat" onclick="pageBannerEditor.moveUp(this)"><i class="fa fa-arrow-up"></i></button></td>
+                    <td><button class="btn-flat" onclick="pageBannerEditor.moveDown(this)"><i class="fa fa-arrow-down"></i></button></td>
+                    <td><button class="btn-flat" onclick="pageBannerEditor.remove(this)"><i class="fa fa-minus-circle"></i></button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="pageBannerEditor.add(this)"><i class="fa fa-plus-circle"></i></button>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="pageBannerEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="pageBannerEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function PageBannerEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.PageBanners = [];
+        self.refElement;
+        self.callback = null;
+
+        var refPageName = null;
+        var refPageId = 1;
+
+        var dialogSelector = '#pageBannerEditorDialog';
+
+        self.init = function () {
+            //appCommon.fetchModules(['textEditor', 'fileUploader']);
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event, pageName, pageId, callback) {
+            refPageName = pageName;
+            refPageId = pageId;
+
+            if (!window[refPageName] || !window['banner']) return;
+
+            //self.PageBanners = jQuery.extend(true, [], window[refPageName].PageBanners);
+            self.PageBanners = [];
+            for (var i = 0; i < window[refPageName].PageBannerIds.length; i++) {
+                self.PageBanners.push(jQuery.extend(true, {}, banner.Banners[window[refPageName].PageBannerIds[i]]));
+            }
+
+            self.callback = callback;
+            self.refElement = $(sender);
+
+            appCommon.evalBindings(dialogSelector);
+
+            appCommon.showDialog(dialogSelector, event);
+        }
+
+        self.add = function (sender) {
+            $.post("/api/Banner/PostBanner/", { Id: -1, PageId: refPageId, BannerTypeId: 11, ViewOrder: self.PageBanners.length })
+                .done(function (data) {
+                    window[refPageName].PageBannerIds.push(data.Id);
+                    pageBannerEditor.PageBanners.push(data);
+                    appCommon.evalBindings(dialogSelector);
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("pageBannerEditor.add() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.remove = function (sender) {
+            if (!confirm('Are you sure to delete this banner?')) return;
+
+            var tr = $(sender).closest('tr');
+            var bannerId = tr.attr('banner-id');
+            if (bannerId) {
+                $.post("/api/Banner/DeleteBanner/", { Id: bannerId })
+                    .done(function (data) {
+                        tr.remove();
+                        window[refPageName].PageBannerIds.removeItem(bannerId);
+                        pageBannerEditor.PageBanners.removeItem(bannerId, 'Id');
+                        appCommon.evalBindings(dialogSelector);
+                    })
+                    .fail(function (data) {
+                        debugger;
+                        alert("pageBannerEditor.remove() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.moveUp = function (sender) {
+            var index = parseInt($(sender).closest('tr').attr('index'));
+            if (index > 0) {
+                self.PageBanners.move(index, index - 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.moveDown = function (sender) {
+            var index = parseInt($(sender).closest('tr').attr('index'));
+            if (index < self.PageBanners.length - 1) {
+                self.PageBanners.move(index, index + 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.bannerTypeChanged = function (sender, event) {
+            //debugger;
+            var $sender = $(sender);
+            var bannerTypeId = parseInt($sender.val());
+            var medias = $sender.closest('tr').find('[module=media]');
+            if (medias.length > 1 && bannerTypeId > 20) { $(medias.get(1)).closest('.bx-wrapper').show(); } else { $(medias.get(1)).closest('.bx-wrapper').hide(); }
+            if (medias.length > 2 && bannerTypeId > 30) { $(medias.get(2)).closest('.bx-wrapper').show(); } else { $(medias.get(2)).closest('.bx-wrapper').hide(); }
+            appCommon.evalBack(sender);
+        };
+
+        self.ok = function (sender) {
+            for (var i = 0; i < self.PageBanners.length; i++) {
+                self.PageBanners[i]['ViewOrder'] = i;
+            }
+            $.post("/api/Banner/UpdateBanners/", { List: self.PageBanners })
+                .done(function (data) {
+                    //alert("Success");
+                    window[refPageName].PageBannerIds = [];
+
+                    for (var i = 0; i < pageBannerEditor.PageBanners.length; i++) {
+                        var bannerId = pageBannerEditor.PageBanners[i].Id;
+                        window[refPageName].PageBannerIds.push(bannerId);
+
+                        window['banner'].Banners[bannerId] = jQuery.extend(true, {}, pageBannerEditor.PageBanners[i]);
+                    }
+
+                    if (self.callback) {
+                        self.callback(pageBannerEditor.PageBanners);
+                    }
+
+                    pageBannerEditor.cancel(sender);
+                }).fail(function (data) {
+                    debugger;
+                    alert("Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.cancel = function (sender) {
+            appCommon.closeDialog(sender);
+        };
+
+        return self;
+    }
+
+    var pageBannerEditor = new PageBannerEditor();
+</script>

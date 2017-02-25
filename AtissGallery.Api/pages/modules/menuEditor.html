@@ -1,0 +1,326 @@
+﻿<div module="menuEditor" data-checked="true">
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="menuMasterDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('menu-management')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <div data-loop="menuEditor.MasterMenus" class="master-menus">
+            <div id="divMenus" data-loop-template="true">
+                <div class="colored-back">
+                    <button class="btn-flat" data-attr="item-id: #item.Id :: menu-type: #item.MenuType" onclick="menuEditor.showEditorDialog(this, event, menuEditor.makeMasterMenu)"><i class="fa fa-bars" aria-hidden="true"></i></button>
+                    <span data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa) + (#item.SubMenus.length > 0 ? ' (' + #item.SubMenus.length + ')' : '')" onclick="menuEditor.toggleSubMenus(this, event)"></span>
+                </div>
+                <div id="divSubMenus" data-bind="do: appCommon.doRepeatLoopTemplate(this, '#item.SubMenus')" class="bx-fix">
+                    <div class="width-35" data-loop-stick="first"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div></div>
+        <div class="bx-bar width-120">
+            <button class="btn-flat bx-xxs-1-1" data-bind="text: Strings('button-close')" onclick="appCommon.closeDialog(this)"></button>
+        </div>
+    </div>
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="menuEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('menu-management') + ' - ' + menuEditor.getParentTitle(this)" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9" data-loop="menuEditor.InnerMenus">
+        <div data-loop-template="true" class="bx-fix menu-editor-item" data-attr="index: #index :: item-id: #item.Id">
+            <div class="width-35">
+                <button class="btn-flat" onclick="menuEditor.moveUp(this)"><i class="fa fa-arrow-up"></i></button>
+                <button class="btn-flat" onclick="menuEditor.moveDown(this)"><i class="fa fa-arrow-down"></i></button>
+            </div>
+            <div class="bx-bar">
+                <div class="bx-xxs-1-1 bx-xs-4-5 padding-3-6">
+                    <div class="bx-bar bx-rtl">
+                        <input type="text" class="bx-xxs-1-1 bx-xs-1-3" data-bind="val: #item.TitleFa" data-attr="placeholder: Strings('farsi')" onchange="appCommon.evalBack(this)" />
+                        <input type="text" class="bx-xxs-1-1 bx-xs-2-3" data-bind="val: #item.SubTitleFa" data-attr="placeholder: Strings('farsi')" onchange="appCommon.evalBack(this)" />
+                    </div>
+                    <div class="bx-bar bx-ltr">
+                        <input type="text" class="bx-xxs-1-1 bx-xs-1-3" data-bind="val: #item.TitleEn" data-attr="placeholder: Strings('english')" onchange="appCommon.evalBack(this)" />
+                        <input type="text" class="bx-xxs-1-1 bx-xs-2-3" data-bind="val: #item.SubTitleEn" data-attr="placeholder: Strings('english')" onchange="appCommon.evalBack(this)" />
+                    </div>
+                    <div class="bx-fix bx-ltr">
+                        <div class="bx-fill">
+                            <input type="text" class="bx-xxs-1-1" data-bind="val: #item.Address" data-attr="placeholder: Strings('link-address')" onchange="appCommon.evalBack(this)" />
+                        </div>
+                        <div>
+                            <input type="number" min="1" max="10" data-bind="val: #item.ColNo" onchange="appCommon.evalBack(this)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="bx-xxs-1-1 bx-xs-1-5 padding-3-6">
+                    <div class="bx-wrapper bx-ratio-1-2" onclick="menuEditor.openMediaSelector(this, event)">
+                        <div class="bx-bar border-whitesmoke-1">
+                            <module type="media" view-mode="back-cover" data-attr="media-id: #item.MediaId" data-bind="attr: {'data-checked': ''}"></module>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="width-35">
+                <button class="btn-flat" data-attr="item-enabled: #item.Enabled" onclick="menuEditor.toggleEnabled(this)"><i class="fa fa-check-square-o"></i></button>
+                <button class="btn-flat" onclick="menuEditor.remove(this)"><i class="fa fa-minus-circle"></i></button>
+            </div>
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="menuEditor.add(this)"><i class="fa fa-plus-circle"></i></button>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="menuEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="menuEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function MenuEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.MasterMenus = [];
+        self.InnerMenus = [];
+        self.refElement;
+        self.callback = null;
+        self.refMediaElement;
+
+        var dialogSelector = '#menuEditorDialog';
+        var dialogMasterSelector = '#menuMasterDialog';
+
+        self.init = function () {
+            appCommon.fetchModules(['mediaSelector', 'media']);
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event, callback) {
+            //debugger;
+            self.makeMasterMenu();
+
+            appCommon.showDialog(dialogMasterSelector, event);
+        }
+
+        self.makeMasterMenu = function () {
+            //debugger;
+            self.MasterMenus = [
+                { 'Id': -1, 'MenuType': 1, 'TitleFa': Strings('main-menus'), 'TitleEn': Strings('main-menus'), 'SubMenus': [] },
+                { 'Id': -2, 'MenuType': 2, 'TitleFa': Strings('help-links'), 'TitleEn': Strings('help-links'), 'SubMenus': [] },
+                { 'Id': -3, 'MenuType': 3, 'TitleFa': Strings('social-networks'), 'TitleEn': Strings('social-networks'), 'SubMenus': [] },
+            ];
+            for (var i = 0; i < app.Menus.length; i++) {
+                self.MasterMenus[app.Menus[i].MenuType - 1].SubMenus.push(app.Menus[i]);
+            }
+
+            appCommon.evalBindings(dialogMasterSelector);
+        };
+
+        self.toggleSubMenus = function (sender, event) {
+            var $sender = $(sender);
+            var $divMenus = $sender.closest('#divMenus');
+            var $divSubMenus = $divMenus.children('#divSubMenus');
+            $divSubMenus.toggle();
+        };
+
+        var findMenu = function (menus, id) {
+            if (id > 0 && menus) {
+                for (var i = 0; i < menus.length; i++) {
+                    if (menus[i].Id == id) {
+                        return menus[i];
+                    }
+                    var node = findMenu(menus[i].SubMenus, id);
+
+                    if (node) {
+                        return node;
+                    }
+                }
+            }
+            return null;
+        }
+
+        self.showEditorDialog = function (sender, event, callback) {
+            //debugger;
+            var $sender = $(sender);
+            var itemId = parseInt($sender.attr('item-id'));
+            var $dialogSelector = $(dialogSelector);
+            $dialogSelector.attr('parent-id', itemId);
+            $dialogSelector.attr('parent-title', $sender.next().text());
+            $dialogSelector.attr('parent-type', $sender.attr('menu-type'));
+
+            self.InnerMenus = [];
+            if (itemId < 0) {
+                for (var i = 0; i < app.Menus.length; i++) {
+                    if (app.Menus[i].MenuType == -itemId) {
+                        self.InnerMenus.push(jQuery.extend(true, {}, app.Menus[i]));
+                    }
+                }
+            } else {
+                var menu = findMenu(app.Menus, itemId);
+                if (menu) {
+                    self.InnerMenus = jQuery.extend(true, [], menu.SubMenus);
+                }
+            }
+
+            self.refElement = $sender;
+            self.callback = callback;
+
+            appCommon.evalBindings(dialogSelector);
+
+            appCommon.showDialog(dialogSelector, event);
+        };
+
+        self.getParentTitle = function (sender) {
+            return $(dialogSelector).attr('parent-title');
+        };
+
+        self.add = function (sender) {
+            var $dialogSelector = $(dialogSelector);
+            var parentId = parseInt($dialogSelector.attr('parent-id'));
+            var menu = {
+                MenuType: $dialogSelector.attr('parent-type'),
+                ParentId: parentId,
+                ViewOrder: self.InnerMenus.length,
+                ColNo: 1
+            };
+
+            $.post("/api/Menu/CreateMenu/", menu)
+                .done(function (data) {
+                    //debugger;
+                    if (parentId < 0) {
+                        app.Menus.push(data);
+                    } else {
+                        var parentMenu = findMenu(app.Menus, parentId);
+                        if (parentMenu) {
+                            parentMenu.SubMenus.push(data);
+                        }
+                    }
+                    menuEditor.InnerMenus.push(data);
+                    appCommon.evalBindings(dialogSelector);
+
+                    if (self.callback) {
+                        self.callback(menuEditor.InnerMenus);
+                    }
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("menuEditor.add() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.remove = function (sender) {
+            if (!confirm('Are you sure to delete this menu?')) return;
+
+            var itemId = $(sender).closest('.menu-editor-item').attr('item-id');
+            if (itemId) {
+                $.post("/api/Menu/DeleteMenu/", { Id: itemId })
+                    .done(function (data) {
+                        var parentId = parseInt($(dialogSelector).attr('parent-id'));
+                        if (parentId < 0) {
+                            app.Menus.removeItem(itemId, 'Id');
+                        } else {
+                            var parentMenu = findMenu(app.Menus, parentId);
+                            if (parentMenu) {
+                                parentMenu.SubMenus.removeItem(itemId, 'Id');
+                            }
+                        }
+                        menuEditor.InnerMenus.removeItem(itemId, 'Id');
+                        appCommon.evalBindings(dialogSelector);
+
+                        if (self.callback) {
+                            self.callback(menuEditor.InnerMenus);
+                        }
+                    })
+                    .fail(function (data) {
+                        debugger;
+                        alert("menuEditor.remove() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.moveUp = function (sender) {
+            var index = parseInt($(sender).closest('[index]').attr('index'));
+            if (index > 0) {
+                self.InnerMenus.move(index, index - 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.moveDown = function (sender) {
+            var index = parseInt($(sender).closest('[index]').attr('index'));
+            if (index < self.InnerMenus.length - 1) {
+                self.InnerMenus.move(index, index + 1);
+                appCommon.evalBindings(dialogSelector);
+            }
+        };
+
+        self.openMediaSelector = function (sender, event) {
+            //self.refMediaElement = sender;
+            self.refMediaElement = $(sender).find('[module = "media"]');
+            mediaSelector.showDialog(sender, event, menuEditor.setSelectedMedia);
+        };
+
+        self.setSelectedMedia = function (selectedMedia) {
+            //debugger;
+            if (self.refMediaElement && self.refMediaElement.length && window.media) {
+                self.refMediaElement.attr('media-id', selectedMedia.Id);
+                appCommon.evalBackAttr(self.refMediaElement);
+                self.refMediaElement.attr('data-checked', 'false');
+            }
+        };
+
+        self.ok = function (sender) {
+            for (var i = 0; i < self.InnerMenus.length; i++) {
+                self.InnerMenus[i]['ViewOrder'] = i;
+            }
+            $.post("/api/Menu/UpdateMenus/", { List: self.InnerMenus })
+                .done(function (data) {
+                    //alert("Success");
+                    //debugger;
+                    var parentId = parseInt($(dialogSelector).attr('parent-id'));
+                    if (parentId < 0) {
+                        for (var i = 0; i < menuEditor.InnerMenus.length; i++) {
+                            var index = app.Menus.findIndex(menuEditor.InnerMenus[i].Id, 'Id');
+                            if (index >= 0) {
+                                app.Menus[index] = jQuery.extend(true, {}, menuEditor.InnerMenus[i])
+                            }
+                        }
+                    }
+                    else {
+                        var parentMenu = findMenu(app.Menus, parentId);
+                        if (parentMenu) {
+                            parentMenu.SubMenus = jQuery.extend(true, [], menuEditor.InnerMenus);
+                        }
+                    }
+
+                    if (self.callback) {
+                        self.callback(menuEditor.InnerMenus);
+                    }
+
+                    menuEditor.cancel(sender);
+                }).fail(function (data) {
+                    debugger;
+                    alert("menuEditor.update() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.cancel = function (sender) {
+            appCommon.closeDialog(sender);
+        };
+
+        return self;
+    }
+
+    var menuEditor = new MenuEditor();
+</script>

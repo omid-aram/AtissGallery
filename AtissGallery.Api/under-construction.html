@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--, maximum-scale=1.0, user-scalable=0">-->
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Far Gallery | فر گالری</title>
+</head>
+<body style="padding: 0; margin: 0; background-color: #BDBDC1">
+    <div style="text-align: center">
+        <!--<div><img src="html/design/logo.png" alt="Atiss Gallery" /></div>
+        <div><img style="max-width: 100%" src="media/20161227_HP_Tile6_3x2Promo_INTL_Holiday_Campaign.jpg" alt="Atiss Gallery" /></div>
+        <div>UNDER CONSTRUCTION</div>-->
+        <div><img id="imgPoster" src="design/site_-1579927485.jpg" alt="Far Gallery" /></div>
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    var el = document.getElementById('imgPoster');
+    var imageHeight = el.offsetHeight;
+    var imageWidth = el.offsetWidth;
+
+    window.onload = function () {
+        imageHeight = el.offsetHeight;
+        imageWidth = el.offsetWidth;
+
+        window.onresize();
+    };
+
+    window.onresize = function () {
+        var windowHeight = window.innerHeight;
+        var windowWidth = window.innerWidth;
+
+        var windowRatio = windowWidth / windowHeight;
+        var imageRatio = imageWidth / imageHeight;
+
+        if (windowRatio > imageRatio) {
+            el.style.height = windowHeight + 'px';
+            el.style.width = (windowHeight * imageRatio) + 'px';
+        } else {
+            el.style.height = '';
+            el.style.width = '100%';
+        }
+    };
+</script>
+

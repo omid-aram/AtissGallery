@@ -1,0 +1,240 @@
+﻿<div class="atiss-product">
+    <div class="bx-bar padding-9">
+        <div class="bx-sm-1-10 bx-xxs-1-1 bx-padding-x1">
+            <div data-loop="product.SelectedProduct.MediaIds" class="bx-bar">
+                <div data-loop-template="true" class="bx-sm-1-1 bx-xxs-1-3 bx-wrapper bx-ratio-1-1">
+                    <div class="bx-bar border-whitesmoke-1" onclick="product.showDialog(this, event)">
+                        <module type="media" view-mode="back-cover" data-attr="media-id: #item" data-bind="attr: {'data-checked': ''}"></module>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bx-sm-5-10 bx-xxs-1-1 bx-padding-x1" onclick="product.showDialog(this, event)">
+            <module type="media" view-mode="no-text" data-attr="media-id: product.SelectedProduct.CoverMediaId"></module>
+        </div>
+        <div class="bx-sm-4-10 bx-xxs-1-1 padding-0-9">
+            <h1 class="bx-xxs-1-1 padding-6-9 margin-bottom-0" data-bind="text: product.SelectedProduct.Code"></h1>
+            <h3 class="bx-xxs-1-1 padding-6-9" data-bind="text: appCommon.getLanguage() == 'fa' ? (Strings('collection') + ' ' + product.SelectedProduct.CollectionLabel.NameFa) : (product.SelectedProduct.CollectionLabel.NameEn + ' ' + Strings('collection'))"></h3>
+            <div class="bx-spacer"></div>
+            <h4 class="bx-xxs-1-1 padding-6-9" data-bind="text: Strings('description')"></h4>
+            <div class="bx-xxs-1-1 padding-6-9" data-bind="html: appCommon.getLanguage() == 'fa' ? product.SelectedProduct.TextFa : product.SelectedProduct.TextEn">
+            </div>
+            <div class="bx-spacer"></div>
+            <!--<hr />-->
+            <!--<h4 class="bx-xxs-1-1 padding-6-9" data-bind="text: Strings('material')"></h4>-->
+            <div class="bx-bar" data-loop="product.FullProducts">
+                <button data-loop-template="true" class="btn-flat bx-text-near margin-9" data-attr="product-id: #item.Id" onclick="product.btnSelectorClick(this)">
+                    <i data-attr="class: #item.Id == product.SelectedProduct.Id ? 'fa fa-check-square-o fa-2x' : 'fa fa-square-o fa-2x'" class="fa fa-square-o fa-2x"></i>
+                    <span class="font-x14" data-bind="text: appCommon.getLanguage() == 'fa' ? #item.MaterialLabel.NameFa : #item.MaterialLabel.NameEn"></span>
+                    <h2 data-bind="text: #item.Price + ' ' + Strings('price-unit')"></h2>
+                </button>
+            </div>
+            <!--<div class="bx-bar" data-loop="product.SelectedProduct.LabelValues">
+                <div data-loop-template="true" class="bx-bar padding-3-6" data-attr="label-id: #item.Id">
+                    <span data-bind="text: (appCommon.getLanguage() == 'fa' ? app.Labels.findItem(#item.Id, 'Id').NameFa : app.Labels.findItem(#item.Id, 'Id').NameEn) + ' :'"></span>
+                    <div class="bx-spacer"></div>
+                    <h4 data-bind="text: appCommon.getLanguage() == 'fa' ? #item.NameFa : #item.NameEn"></h4>
+                </div>
+            </div>-->
+            <div class="bx-bar padding-top-30 padding-3-6">
+                <button class="btn-flat bx-bar" onclick="product.btnOrderClick(this)"><i class="fa fa-cart-plus fa-4x"></i><h3 data-bind="text: Strings('purchase-order')"></h3></button>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="bx-bar padding-9">
+        <div class="user-info bx-fill bx-hidden">
+            <div class="bx-xs-6-10 bx-xxs-1-1">
+                <div class="bx-fix padding-3-6">
+                    <h4 class="width-120" data-bind="text: Strings('name-family')"></h4>
+                    <input type="text" class="bx-fill" name="customer_name" data-bind="val: product.Purchase.CustomerName" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <h4 class="width-120" data-bind="text: Strings('tel')"></h4>
+                    <input type="text" class="bx-fill" name="customer_phone" data-bind="val: product.Purchase.CustomerPhone" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <h4 class="width-120" data-bind="text: Strings('email')"></h4>
+                    <input type="text" class="bx-fill" name="customer_email" data-bind="val: product.Purchase.CustomerEmail" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <h4 class="width-120" data-bind="text: Strings('address')"></h4>
+                    <input type="text" class="bx-fill" name="customer_address" data-bind="val: product.Purchase.CustomerAddress" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <textarea class="bx-fill" data-attr="placeholder: Strings('description')" data-bind="text: product.Purchase.Description" onchange="appCommon.evalBack(this)"></textarea>
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <div class="bx-fill"></div>
+                    <div class="width-180 display-block">
+                        <img class="bx-fill" id="imgCaptcha" />
+                        <input type="text" class="bx-fill bx-ltr" id="txtCaptcha" />
+                    </div>
+                </div>
+                <div class="bx-fix padding-3-6">
+                    <div class="bx-fill"></div>
+                    <button id="btnPurchase" class="btn-flat bx-bar width-180" onclick="product.btnPurchaseClick(this)"><h3 class="bx-fill" data-bind="text: Strings('purchase')"></h3></button>
+                </div>
+            </div>
+            <div class="bx-xs-4-10 bx-xxs-1-1">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="productViewerDialog">
+        <div class="popup-dialog-header bx-fix">
+            <span data-bind="text: product.SelectedProduct.Code" class="bx-fill padding-6-9 bx-text-center bx-ltr"></span>
+            <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+        </div>
+        <div class="popup-dialog-body">
+            <module type="media" view-mode="no-text"></module>
+        </div>
+        <div class="popup-dialog-footer bx-fix">
+            <div>
+            </div>
+            <div class="bx-bar width-120">
+                <button class="btn-flat bx-xxs-1-1" data-bind="text: Strings('button-close')" onclick="appCommon.closeDialog(this)"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function Product() {
+        var self = this;
+
+        self.ProductCode = '';
+        self.FullProducts = [];
+        self.SelectedProduct = {};
+        self.CaptchaId = 0;
+
+        self.Purchase = {
+            ProductId: -1,
+            CustomerName: '',
+            CustomerPhone: '',
+            CustomerEmail: '',
+            CustomerAddress: '',
+            Description: '',
+            Captcha: {
+                Key: 0,
+                Value: ''
+            }
+        };
+
+        var dialogSelector = '#productViewerDialog';
+        var pageSelector = '.atiss-product';
+
+        self.init = function () {
+            //debugger;
+            appCommon.fetchModules(['media', 'productThumbnail']);
+
+            self.fetchFullProduct();
+        };
+
+        self.fetchFullProduct = function () {
+            //debugger;
+            if (!window['productThumbnail']) {
+                setTimeout(self.fetchFullProduct, 100);
+                return;
+            }
+
+            self.ProductCode = document.location.href.toLowerCase().split('/product/')[1];
+            if (self.ProductCode) {
+                window['productThumbnail'].fetchFullProduct(self.ProductCode, product.fullProductFetched);
+            }
+        };
+
+        self.fullProductFetched = function () {
+            //debugger;
+            self.FullProducts = window['productThumbnail'].FullProducts[self.ProductCode];
+            self.SelectedProduct = self.FullProducts[0];
+
+            appCommon.evalBindings(pageSelector);
+        };
+
+        self.btnSelectorClick = function (sender) {
+            //debugger;
+            var productId = $(sender).attr('product-id');
+
+            self.SelectedProduct = self.FullProducts.findItem(productId, 'Id');
+
+            appCommon.evalBindings(pageSelector);
+        };
+
+        self.btnOrderClick = function (sender) {
+            var $userInfo = $('.user-info');
+            $userInfo.show();
+            loadCaptcha();
+            $('#btnPurchase').prop('disabled', false);
+            $('html,body').animate({ scrollTop: $userInfo.offset().top - 60 }, 'slow');
+        };
+
+        function loadCaptcha() {
+            self.CaptchaId = 0;
+
+            $.post("/api/Account/GenerateCaptcha/")
+                .done(function (data) {
+                    //debugger;
+                    var result = JSON.parse(data);
+                    self.CaptchaId = result.id;
+                    $("#imgCaptcha").attr('src', 'data:image/png;base64,' + result.image);
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("login.loadCaptcha() Fail: " + JSON.stringify(data.responseText));
+                });
+        }
+
+        self.btnPurchaseClick = function (sender) {
+            self.Purchase.Captcha = {
+                Key: self.CaptchaId,
+                Value: $('#txtCaptcha').val()
+            }
+
+            $(sender).prop('disabled', true);
+            if (self.SelectedProduct) {
+                self.Purchase.ProductId = self.SelectedProduct.Id;
+
+                $.post("/api/Product/DoPurchase/", self.Purchase)
+                    .done(function (data) {
+                        var purchaseId = data;
+                        product.sendEmail(purchaseId);
+                        alert('با سپاس از خریدتان به زودی با شما تماس خواهیم گرفت. کد رهگیری: ' + purchaseId);
+                    }).fail(function (data) {
+                        debugger;
+                        alert("product.DoPurchase() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.sendEmail = function (purchaseId) {
+            $.post("/api/Product/SendEmail/", { Value: purchaseId })
+                .done(function (data) {
+                    //
+                }).fail(function (data) {
+                    //debugger;
+                    //alert("product.DoPurchase() Fail: " + JSON.stringify(data.responseText));
+                });
+        };
+
+        self.showDialog = function (sender, event) {
+            //debugger;
+            if (event) {
+                event.stopPropagation();
+            }
+
+            var $sender = $(sender);
+            var mediaId = $sender.children().attr('media-id');
+            $(dialogSelector).find('[module=media]').attr({ 'media-id': mediaId, 'data-checked': '' });
+
+            appCommon.showDialog(dialogSelector);
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var product = new Product();
+</script>

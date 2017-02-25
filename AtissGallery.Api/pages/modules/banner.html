@@ -1,0 +1,141 @@
+﻿<div module="banner" class="bx-bar">
+    <div data-loop="banner.getList(this)" class="bx-bar">
+        <div data-loop-template="true" class="bx-bar" data-bind="css: {'display': #item.Enabled > 0 ? '' : 'none'}">
+            <div data-if="#item.BannerTypeId == 11">
+                <module type="media" data-attr="media-id: #item.FirstMediaId :: media-link: #item.FirstLink" class="bx-fill-wh bx-padding-x1"></module>
+            </div>
+            <div data-if="#item.BannerTypeId == 21">
+                <module type="media" data-attr="media-id: #item.FirstMediaId :: media-link: #item.FirstLink" class="bx-sm-9-25 bx-xxs-1-1 bx-padding-x1"></module>
+                <module type="media" data-attr="media-id: #item.SecondMediaId :: media-link: #item.SecondLink" class="bx-sm-16-25 bx-xxs-1-1 bx-padding-x1"></module>
+                <!--<div class="bx-sm-16-25 bx-xxs-1-1">
+                    <div class="bx-spacer bx-hidden-from-sm"></div>
+                    <div class="bx-fix">
+                        <div class="bx-spacer bx-hidden-to-sm"></div>
+                        <module type="media" data-attr="media-id: #item.SecondMediaId" class="bx-padding-x1"></module>
+                    </div>
+                </div>-->
+            </div>
+            <div data-if="#item.BannerTypeId == 22">
+                <module type="media" data-attr="media-id: #item.FirstMediaId :: media-link: #item.FirstLink" class="bx-sm-1-2 bx-xxs-1-1 bx-padding-x1"></module>
+                <module type="media" data-attr="media-id: #item.SecondMediaId :: media-link: #item.SecondLink" class="bx-sm-1-2 bx-xxs-1-1 bx-padding-x1"></module>
+            </div>
+            <div data-if="#item.BannerTypeId == 23">
+                <!--<div class="bx-sm-16-25 bx-xxs-1-1">
+                    <div class="bx-fix">
+                        <module type="media" data-attr="media-id: #item.FirstMediaId" class="bx-padding-x1"></module>
+                        <div class="bx-spacer bx-hidden-to-sm"></div>
+                    </div>
+                    <div class="bx-spacer bx-hidden-from-sm"></div>
+                </div>-->
+                <module type="media" data-attr="media-id: #item.FirstMediaId :: media-link: #item.FirstLink" class="bx-sm-16-25 bx-xxs-1-1 bx-padding-x1"></module>
+                <module type="media" data-attr="media-id: #item.SecondMediaId :: media-link: #item.SecondLink" class="bx-sm-9-25 bx-xxs-1-1 bx-padding-x1"></module>
+            </div>
+            <div data-if="#item.BannerTypeId == 33">
+                <module type="media" data-attr="media-id: #item.FirstMediaId :: media-link: #item.FirstLink" class="bx-sm-1-3 bx-xxs-1-1 bx-padding-x1"></module>
+                <module type="media" data-attr="media-id: #item.SecondMediaId :: media-link: #item.SecondLink" class="bx-sm-1-3 bx-xxs-1-1 bx-padding-x1"></module>
+                <module type="media" data-attr="media-id: #item.ThirdMediaId :: media-link: #item.ThirdLink" class="bx-sm-1-3 bx-xxs-1-1 bx-padding-x1"></module>
+            </div>
+            <!--<div class="bx-spacer"></div>-->
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function Banner() {
+        var self = this;
+
+        self.isFetching = false;
+        self.Banners = {};
+
+        self.getList = function (sender) {
+            var id = $(sender).parents('[module="banner"]').attr('banner-id');
+            return self.Banners[id] ? [self.Banners[id]] : [{ BannerTypeId: -1, FirstMediaId: -1, SecondMediaId: -1 }];
+        }
+
+        self.fetchBanners = function () {
+            if (self.isFetching) return;
+
+            var ids = [];
+            $('[module="banner"]').each(function () {
+                var $this = $(this);
+                var id = parseInt($this.attr('banner-id'));
+                if (!isNaN(id) && !self.Banners[id] && ids.indexOf(id) < 0) {
+                    ids.push(id);
+                }
+            });
+
+            if (ids.length > 0) {
+                self.isFetching = true;
+                $.post("/api/Banner/FetchBanners", { Ids: ids })
+                    .done(function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            var id = data[i]['Id'];
+                            banner.Banners[id] = data[i];                            
+                        }
+                    }).fail(function (data) {
+                        debugger;
+                        alert("banner.fetchBanners() Fail: " + data.message);
+                    }).always(function () {
+                        self.isFetching = false;
+                    });;
+            }
+        };
+
+        self.checkModule = function (sender) {
+            var $sender = $(sender);
+            var id = parseInt($sender.attr('banner-id'));
+            if (self.Banners[id]) {
+                appCommon.evalBindings($sender);
+                $sender.attr('data-checked', 'true');
+            } else {
+                self.fetchBanners();
+            }
+        };
+
+        self.adjustBoxes = function (sender) {
+            var pbanner = $(sender).attr('module') == 'banner' ? $(sender) : $(sender).parents('[module="banner"]');
+
+            var squareBox = pbanner.children().children().children('.bx-sm-9-25');
+            var sideBox = pbanner.children().children().children('.bx-sm-16-25');
+
+            if (!sideBox.find('#loopItem > a > img').length && !sideBox.find('#loopItem > a > video').length) {
+                //setTimeout(function () { banner.adjustBoxes(sender); }, 500);
+                return;
+            }
+
+            //debugger;
+            var sqrWidth = squareBox.width() - 1;
+            if (window.innerWidth >= 768) {
+                squareBox.height(sqrWidth);
+                sideBox.height(sqrWidth);
+                sideBox.find('#loopItem > a > img').removeClass('bx-fill').height(sqrWidth);
+                sideBox.find('#loopItem > a > video').removeClass('bx-fill').height(sqrWidth);
+                squareBox.find('#loopItem > a > img').removeClass('bx-fill').height(sqrWidth).width(sqrWidth);
+                squareBox.find('#loopItem > a > video').removeClass('bx-fill').height(sqrWidth).width(sqrWidth);
+            } else {
+                squareBox.css('height', '');
+                sideBox.css('height', '');
+                sideBox.find('#loopItem > a > img').addClass('bx-fill').css('height', '');
+                sideBox.find('#loopItem > a > video').addClass('bx-fill').css('height', '');
+                squareBox.find('#loopItem > a > img').addClass('bx-fill').css('height', '').css('width', '');
+                squareBox.find('#loopItem > a > video').addClass('bx-fill').css('height', '').css('width', '');
+            }
+        };
+
+        self.init = function () {
+            appCommon.fetchModules(['media']);
+        }
+
+        return self;
+    };
+
+    var banner = new Banner();
+
+    $(window).off('resize');
+    $(window).on('resize', function () {
+        var squareBanner = $('[module="banner"] .bx-sm-9-25').parents('[module="banner"]');
+        squareBanner.each(function () {
+            banner.adjustBoxes(this);
+        });
+    });
+</script>

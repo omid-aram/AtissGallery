@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name="theme-color" content="#FF0000" />
+    <meta name="msapplication-navbutton-color" content="#FF0000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#FF0000" />
+    <title>Atiss Gallery</title>
+    <base href="/" />
+
+    <style>
+        .loading-panel-fill {
+            background-image: url('design/logo.jpg');
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            background-color: rgba(255, 255, 255, 1);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999999998;
+        }
+
+        .loading-panel {
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999999999;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 9px 0 0 0;
+        }
+
+            .loading-panel img {
+                width: 22px;
+            }
+    </style>
+
+</head>
+
+<body>
+    <div class="loading-panel-fill">
+    </div>
+    <div class="loading-panel">
+        <img src="design/loading.gif" alt="Loading..." />
+    </div>
+    <div class="page-container back-color-silver">
+        <div class="header-container bx-padding-zero-to-xs"></div>
+        <div class="main-container bx-padding-zero-to-xs"></div>
+        <div class="footer-container bx-padding-zero-to-xs back-color-silver"></div>
+        <div class="usermenu-container"></div>
+        <div class="dialogs-container"></div>
+    </div>
+    <div class="popup-mask"></div>
+    <div class="modules-container"></div>
+    <!--<div class="pages-holder"></div>-->
+
+    <script type="text/javascript" src="js/tools/jquery-1.12.4.min.js"></script>
+    <!--<script type="text/javascript" src="js/tools/jquery.history.js"></script>-->
+    <script type="text/javascript" src="js/_reference.strings.js"></script>
+    <script type="text/javascript" src="js/app.common.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript">
+        var appCommon = appCommon || new AppCommon(1.67);
+        appCommon.initialize();
+
+        var app = new Application();
+
+        $(document).ready(function () {
+        });
+    </script>
+
+</body>
+
+</html>

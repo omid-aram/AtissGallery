@@ -1,0 +1,139 @@
+﻿<div class="atiss-login bx-text-center padding-12">
+    <div class="bx-bar width-360 max-width-fill">
+        <div class="bx-fill border-whitesmoke-1 bx-text-near authenticated-needed">
+            <div class="bx-fill back-color-silver padding-6-9" data-bind="text: Strings('change-password')"></div>
+            <div class="padding-12">
+                <h5 class="padding-top-15" data-bind="text: Strings('password-new')"></h5>
+                <input type="password" class="bx-ltr bx-fill" data-bind="val: login.Passes.NewPass" onchange="appCommon.evalBack(this)" />
+                <h5 class="padding-top-15" data-bind="text: Strings('password-renew')"></h5>
+                <input type="password" class="bx-ltr bx-fill" data-bind="val: login.Passes.ReNewPass" onchange="appCommon.evalBack(this)" />
+                <div class="bx-text-center padding-top-15">
+                    <button class="width-120 max-width-fill btn-flat-success" data-bind="text: Strings('change-password')" onclick="login.changePassword()"></button>
+                </div>
+            </div>
+        </div>
+        <div class="bx-spacer"></div>
+        <div class="bx-fill border-whitesmoke-1 bx-text-near">
+            <div class="bx-fill back-color-silver padding-6-9" data-bind="text: Strings('login')"></div>
+            <div class="padding-12">
+                <h5 data-bind="text: Strings('username')"></h5>
+                <input type="text" class="bx-ltr bx-fill" data-bind="val: login.User.UserName" onchange="appCommon.evalBack(this)" />
+                <h5 class="padding-top-15" data-bind="text: Strings('password')"></h5>
+                <input type="password" class="bx-ltr bx-fill" data-bind="val: login.User.Password" onchange="appCommon.evalBack(this)" />
+                <div class="bx-bar bx-ltr padding-top-15">
+                    <img class="bx-xxs-1-2" id="imgCaptcha" />
+                    <input type="text" class="bx-xxs-1-2" id="txtCaptcha" />
+                </div>
+                <div class="bx-text-center padding-top-15">
+                    <button class="width-120 max-width-fill btn-flat-success" data-bind="text: Strings('login')" onclick="login.doLogin()"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/tools/md5.js"></script>
+<script type="text/javascript">
+    function Login() {
+
+        var self = this;
+        self.ReturnUrl = '';
+        self.CaptchaId = 0;
+        self.User = {
+            UserName: '',
+            Password: ''
+        };
+
+        self.Passes = {
+            NewPass: '',
+            ReNewPass: ''
+        };
+
+        self.init = function () {
+            var queryString = window.location.search.toLowerCase();
+            self.ReturnUrl = queryString.indexOf('r=') < 0 ? '/admin/panel' : queryString.split('r=')[1];
+
+            loadCaptcha();
+        };
+
+        function loadCaptcha() {
+            $.post("/api/Account/GenerateCaptcha/")
+                .done(function (data) {
+                    //debugger;
+                    var result = JSON.parse(data);
+                    self.CaptchaId = result.id;
+                    $("#imgCaptcha").attr('src', 'data:image/png;base64,' + result.image);
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("login.loadCaptcha() Fail: " + JSON.stringify(data.responseText));
+                });
+        }
+
+        self.doLogin = function () {
+
+            var loginData = {
+                grant_type: 'password',
+                username: self.User.UserName + '|' + self.CaptchaId + '|' + $('#txtCaptcha').val(),
+                password: md5(self.User.Password).toString()
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/Token',
+                data: loginData
+            }).done(function (data) {
+
+                localStorage.setItem(app.tokenKey, data.access_token);
+
+                appCommon.goto(self.ReturnUrl);
+
+            }).fail(function (error) {
+                debugger;
+                alert("/api/Token Fail: " + JSON.stringify(error.responseText));
+            });
+        };
+
+        self.changePassword = function () {
+            if (self.Passes.NewPass && self.Passes.NewPass == self.Passes.ReNewPass) {
+
+                if (self.Passes.NewPass.length < 8) {
+                    alert('Please choose a password contains at least 8 characters and some symbols');
+                    return;
+                }
+
+                var newPass = md5(self.Passes.NewPass);
+
+                $.post("/api/Account/ChangePassword/", { UserName: app.user.UserName, FullName: newPass })
+                    .done(function (data) {
+
+                        self.Passes = {
+                            NewPass: '',
+                            ReNewPass: ''
+                        };
+                        appCommon.evalBindings('.atiss-login');
+
+                        alert('Password changed successfully');
+                    })
+                    .fail(function (data) {
+                        debugger;
+                        alert("login.changePassword() Fail: " + JSON.stringify(data.responseText));
+                    });
+
+            } else {
+                alert('Please enter new passwords correctly.');
+            }
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var login = new Login();
+
+    appCommon.evalBindings('.atiss-login');
+
+    var _pageTitle = Strings('brand-title');// + ' - ' + strings('menu-home');
+</script>
+

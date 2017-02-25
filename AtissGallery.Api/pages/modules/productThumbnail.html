@@ -1,0 +1,173 @@
+﻿<div module="productThumbnail">
+    <module type="media" view-mode="no-text" data-attr="media-id: productThumbnail.getCoverMediaId(this)" data-bind="attr: {'data-checked': ''}"></module>
+</div>
+<!--<div module="product" class="bx-bar">
+    <div data-if="product.getViewMode(this) === 'cover-only'">
+        <module type="media" view-mode="no-text" data-attr="media-id: product.getCoverMediaId(this)"></module>
+    </div>
+    <div data-if="product.getViewMode(this) === 'full'">
+        <h1 class="bx-xxs-1-1 padding-6-9" data-bind="text: appCommon.getLanguage() == 'fa' ? product.FullProduct.NameFa : product.FullProduct.NameEn"></h1>
+        <div class="bx-sm-1-2 bx-xxs-1-1 padding-6-9">
+            <module type="media" data-attr="media-id: product.FullProduct.CoverMediaId"></module>
+            <div class="bx-spacer"></div>
+            <div data-loop="product.FullProduct.MediaIds" class="bx-bar">
+                <div data-loop-template="true" class="bx-xxs-1-3 bx-wrapper bx-ratio-1-1">
+                    <div class="bx-bar border-whitesmoke-1">
+                        <module type="media" view-mode="back-cover" data-attr="media-id: #item" data-bind="attr: {'data-checked': ''}"></module>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bx-sm-1-2 bx-xxs-1-1 padding-6-9">
+            <div class="bx-bar" data-loop="product.FullProduct.LabelValues">
+                <div data-loop-template="true" class="bx-bar padding-3-6" data-attr="label-id: #item.Id">
+                    <span data-bind="text: (appCommon.getLanguage() == 'fa' ? app.Labels.findItem(#item.Id, 'Id').NameFa : app.Labels.findItem(#item.Id, 'Id').NameEn) + ' :'"></span>
+                    <div class="bx-spacer"></div>
+                    <h4 data-bind="text: appCommon.getLanguage() == 'fa' ? #item.NameFa : #item.NameEn"></h4>
+                </div>
+            </div>
+            <div class="bx-bar padding-top-30 padding-3-6">
+                <h2 data-bind="text: product.FullProduct.Price + ' ' + Strings('price-unit')"></h2>
+            </div>
+            <div class="bx-bar padding-top-30 padding-3-6">
+                <button><i class="fa fa-cart-plus fa-2x"></i><h3 data-bind="text: Strings('purchase-order')"></h3></button>
+            </div>
+        </div>
+        <div class="bx-xxs-1-1 padding-6-9" data-bind="html: appCommon.getLanguage() == 'fa' ? product.FullProduct.TextFa : product.FullProduct.TextEn">
+        </div>
+    </div>
+</div>-->
+
+<script type="text/javascript">
+    function ProductThumbnail() {
+        var self = this;
+
+        self.Products = {};
+        self.isFetching = false;
+        self.FullProducts = {};
+
+        self.init = function () {
+            appCommon.fetchModules(['media']);
+        };
+
+        self.checkModule = function (sender) {
+
+            var $sender = $(sender);
+            //var id = parseInt($sender.attr('product-id'));
+            var code = $sender.attr('product-code');
+
+            //if (self.Products[id]) {
+            if (self.Products[code]) {
+                appCommon.evalBindings($sender);
+                $sender.attr('data-checked', 'true');
+
+            } else {
+                self.fetchProducts();
+            }
+        };
+
+        //self.getViewMode = function (sender) {
+        //    var ownerModule = $(sender).parents('[module="productThumbnail"]');
+        //    return ownerModule.attr('view-mode') ? ownerModule.attr('view-mode') : 'cover-only';
+        //};
+
+        //self.getProduct = function (sender) {
+        //    var productId = $(sender).parents('[module="productThumbnail"]').attr('product-id');
+
+        //    if (self.Products[productId]) {
+        //        return self.Products[productId];
+        //    } else {
+        //        return {};
+        //    }
+        //};
+
+        self.getCoverMediaId = function (sender) {
+            //debugger;
+            //var productId = $(sender).parents('[module="productThumbnail"]').attr('product-id');
+            var productCode = $(sender).parents('[module="productThumbnail"]').attr('product-code');
+
+            //if (self.Products[productId]) {
+            if (self.Products[productCode]) {
+                //return self.Products[productId].CoverMediaId;
+                return self.Products[productCode].CoverMediaId;
+            } else {
+                return 0;
+            }
+        };
+
+        self.fetchProducts = function () {
+            if (self.isFetching) return;
+
+            var ids = [];
+            $('[module="productThumbnail"]').each(function () {
+                var $this = $(this);
+                //var id = parseInt($this.attr('product-id'));
+                var code = parseInt($this.attr('product-code'));
+                //if (!isNaN(id) && !self.Products[id] && ids.indexOf(id) < 0) {
+                if (!isNaN(code) && !self.Products[code] && ids.indexOf(code) < 0) {
+                    ids.push(code);
+                }
+            });
+
+            if (ids.length > 0) {
+                self.isFetching = true;
+                //TODO: Using Code instead of ID
+                $.post("/api/Product/FetchProducts", { Ids: ids })
+                    .done(function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            var id = data[i]['Id'];
+                            if (!productThumbnail.Products[id]) {
+                                productThumbnail.Products[id] = data[i];
+                            }
+                        }
+                    }).fail(function (data) {
+                        debugger;
+                        alert("product.fetchProducts() Fail: " + data.message);
+                    }).always(function () {
+                        self.isFetching = false;
+                    });;
+            }
+        };
+
+        self.fetchFullProduct = function (code, callback) {
+            $.post("/api/Product/FetchFullProduct", { 'Value': code })
+                .done(function (data) {
+                    //debugger;
+
+                    for (var i = 0; i < data.length; i++) {
+                        var fullProduct = data[i];
+                        fullProduct.MaterialLabel = { KeyCode: 'none' }
+                        fullProduct.CollectionLabel = { KeyCode: 'none' }
+
+                        for (var k = 0; k < fullProduct.LabelIds.length; k++) {
+                            var label = app.Labels.findItem(fullProduct.LabelIds[k], 'Id');
+                            if (label.MasterKeyCode.toLowerCase() == 'material') {
+                                fullProduct.MaterialLabel = label;
+                                //break;
+                            }
+                            if (label.MasterKeyCode.toLowerCase() == 'collection') {
+                                fullProduct.CollectionLabel = label;
+                            }
+                        }
+                    }
+
+                    productThumbnail.FullProducts[code] = data;
+
+                    //appCommon.evalBindings('.atiss-product');
+                    if (callback) {
+                        callback();
+                    }
+
+                }).fail(function (data) {
+                    debugger;
+                    alert("productThumbnail.fetchFullProduct() Fail: " + data.message);
+                }).always(function () {
+                    self.isFetching = false;
+                });;
+        };
+
+        return self;
+    }
+
+    var productThumbnail = new ProductThumbnail();
+</script>

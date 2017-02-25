@@ -1,0 +1,28 @@
+﻿<div class="modules-media" module="media">
+    <div data-loop="media.getList(this)" class="bx-fill-h">
+        <div data-loop-template="true" class="bx-bar" id="loopItem" data-bind="attr: {'index': #index} :: css: {'display': #index == 0 ? '' : 'none', 'background-color': #item.BackColor}">
+            <div data-if="media.getViewMode(this) === 'full'">
+                <a class="bx-bar">
+                    <div data-bind="do: media.createMedia(this, #item)"></div>
+                    <div class="bx-pos-absolute bx-pos-static-to-sm bx-fill-wh padding-12" data-bind="css: {'display': #item.TextPosition ? '' : 'none'}">
+                        <div class="bx-pos-relative bx-pos-static-to-sm bx-fill-wh" onmouseover="media.pauseSlideShow(this)" onmouseout="media.resumeSlideShow(this)">
+                            <div class="bx-pos-static-to-sm" data-bind="html: appCommon.getLanguage() == 'fa' ? #item.TextFa : #item.TextEn :: css: {width: #item.TextWidth + '%'} :: do: appCommon.addPositionClass(this, #item.TextPosition)">
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div data-if="media.getViewMode(this) === 'no-text'">
+                <div data-bind="do: media.createMedia(this, #item)"></div>
+            </div>
+            <div data-if="media.getViewMode(this) === 'image-only'">
+                <img class="bx-fill bx-hidden" alt="" data-bind="attr: { 'src': #item.File.ContentType == 'video/mp4' ? #item.File.Cover : #item.File.Address } :: css: { 'display': '' }">
+            </div>
+            <div data-if="media.getViewMode(this) === 'back-cover'">
+                <div data-bind="do: media.setParentBackgroundImage(this, #item) :: css: {'display': (#item.File.ContentType == 'video/mp4') ? '' : 'none' }" class="bx-pos-absolute bx-pos-top-right bx-hidden"><i class="fa fa-video-camera bx-whitesmoke" aria-hidden="true"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/modules/media.js"></script>

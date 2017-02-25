@@ -1,0 +1,65 @@
+<div class="atiss-footer">
+    <div class="bx-bar" data-loop="_footer.MainMenus">
+        <div data-loop-stick="last" data-attr="class: 'bx-xxs-1-1 bx-xs-2-' + (_footer.MainMenus.length + 1) + ' bx-sm-1-' + (_footer.MainMenus.length + 1)">
+            <div class="bx-fix max-width-180 height-30 height-to-children bx-whitesmoke">
+                <input type="text" class="bx-fill-wh bx-glass" data-bind="attr: {placeholder: Strings('search')}" />
+                <span>
+                    <button type="button" class="bx-glass">
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+        <div data-loop-template="true" data-bind="attr: {class: 'bx-bar bx-xxs-1-1 bx-xs-2-' + (_footer.MainMenus.length + 1) + ' bx-sm-1-' + (_footer.MainMenus.length + 1) }">
+            <span class="no-wrap">
+                <a class="authenticated-needed" href="#" data-bind="attr: { href: appCommon.getFixedUrl(appCommon.mergeAddress('admin', #item.Address)) }"><i class="fa fa-wrench" aria-hidden="true"></i></a>
+                <a href="#" class="bx-fill" data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa) :: attr: { href: appCommon.getFixedUrl(#item.Address) }"></a>
+            </span>
+            <div class="bx-bar" data-bind="do: appCommon.doRepeatLoopTemplate(this, '#item.SubMenus', 'attr: {class: \'bx-bar\'}')"></div>
+        </div>
+    </div>
+    <div class="padding-9-0">
+        <hr />
+    </div>
+    <div class="bx-bar" data-loop="_footer.HelpLinks">
+        <div data-loop-template="true" data-bind="attr: {class: 'bx-bar bx-xxs-1-1 bx-xs-2-' + (_footer.MainMenus.length + 1) + ' bx-sm-1-' + (_footer.MainMenus.length + 1) }">
+            <a href="#" class="bx-fill" data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa) :: attr: { href: appCommon.getFixedUrl(#item.Address) }"></a>
+            <div class="bx-bar" data-bind="do: appCommon.doRepeatLoopTemplate(this, '#item.SubMenus', 'attr: {class: \'bx-bar\'}')"></div>
+        </div>
+    </div>
+    <div class="bx-bar padding-9-0" data-loop="_footer.SocialNetworks">
+        <div data-loop-template="true">
+            <a href="#" class="bx-bar" data-attr="href: appCommon.getFixedUrl(#item.Address)"><img data-attr="src: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa)" /><div class="bx-spacer"></div></a>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function _Footer() {
+        var self = this;
+
+        self.init = function () {
+            self.MainMenus = [];
+            self.HelpLinks = [];
+            self.SocialNetworks = [];
+
+            for (var i = 0; i < app.Menus.length; i++) {
+                if (app.Menus[i].MenuType == 1) {
+                    self.MainMenus.push(app.Menus[i]);
+                }
+                if (app.Menus[i].MenuType == 2) {
+                    self.HelpLinks.push(app.Menus[i]);
+                }
+                if (app.Menus[i].MenuType == 3) {
+                    self.SocialNetworks.push(app.Menus[i]);
+                }
+            }
+
+            appCommon.evalBindings('.atiss-footer');
+        }
+
+        return self;
+    }
+
+    var _footer = new _Footer();
+</script>

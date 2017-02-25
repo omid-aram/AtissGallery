@@ -1,0 +1,147 @@
+﻿<div module="bannerEditor" editor-of="banner" data-checked="true" class="atiss-banner-editor bx-pos-absolute bx-pos-top-far">
+    <button class="btn-flat" onclick="bannerEditor.showDialog(this, event)"><i class="fa fa-address-card" aria-hidden="true"></i></button>
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="bannerEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('banner-editor')" class="bx-fill padding-6-9"></span>
+        <!--<div class="width-35 bx-text-center" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></div>-->
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <div class="bx-bar">
+            <span class="bx-fill" data-bind="text: Strings('banner-type')"></span>
+            <select data-bind="val: bannerEditor.Banner.BannerTypeId" onchange="bannerEditor.typeChanged(this)">
+                <option value="11" data-bind="text: Strings('banner-single')"></option>
+                <option value="21" data-bind="text: Strings('banner-double-sf')"></option>
+                <option value="22" data-bind="text: Strings('banner-double-eq')"></option>
+                <option value="23" data-bind="text: Strings('banner-double-ss')"></option>
+                <option value="33" data-bind="text: Strings('banner-triple-eq')"></option>
+            </select>
+        </div>
+        <div class="bx-bar">
+            <module type="mediaSelector"></module>
+            <div class="bx-xxs-1-3">
+                <span class="bx-fill" data-bind="text: Strings('first-media')"></span>
+                <div class="bx-bar border-whitesmoke-1 min-height-50" onclick="bannerEditor.openMediaSelector(this, event)">
+                    <module type="media" view-mode="image-only" data-attr="media-id: bannerEditor.Banner.FirstMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                </div>
+                <input type="text" class="bx-fill bx-ltr" data-attr="placeholder: Strings('link-address')" data-bind="val: bannerEditor.Banner.FirstLink" onchange="appCommon.evalBack(this)" />
+            </div>
+            <div class="bx-xxs-1-3" data-bind="css: {'display': (bannerEditor.Banner.BannerTypeId > 20) ? '' : 'none'}">
+                <span class="bx-fill" data-bind="text: Strings('Second-media')"></span>
+                <div class="bx-bar border-whitesmoke-1 min-height-50" onclick="bannerEditor.openMediaSelector(this, event)">
+                    <module type="media" view-mode="image-only" data-attr="media-id: bannerEditor.Banner.SecondMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                </div>
+                <input type="text" class="bx-fill bx-ltr" data-attr="placeholder: Strings('link-address')" data-bind="val: bannerEditor.Banner.SecondLink" onchange="appCommon.evalBack(this)" />
+            </div>
+            <div class="bx-xxs-1-3" data-bind="css: {'display': (bannerEditor.Banner.BannerTypeId > 30) ? '' : 'none'}">
+                <span class="bx-fill" data-bind="text: Strings('Third-media')"></span>
+                <div class="bx-bar border-whitesmoke-1 min-height-50" onclick="bannerEditor.openMediaSelector(this, event)">
+                    <module type="media" view-mode="image-only" data-attr="media-id: bannerEditor.Banner.ThirdMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                </div>
+                <input type="text" class="bx-fill bx-ltr" data-attr="placeholder: Strings('link-address')" data-bind="val: bannerEditor.Banner.ThirdLink" onchange="appCommon.evalBack(this)" />
+            </div>
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat-success bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="bannerEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="bannerEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function BannerEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.Banner = {};
+        self.refElement;
+        self.refMediaElement;
+        var dialogSelector = '#bannerEditorDialog';
+
+        self.init = function () {
+            appCommon.fetchModules(['media', 'mediaSelector']);
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event) {
+            //debugger;
+            self.refElement = $(sender).parents('[module = "banner"]');
+            var bannerId = self.refElement.attr('banner-id');
+            if (bannerId && window.banner && window.banner.Banners[bannerId]) {
+                $(dialogSelector).attr('banner-id', bannerId);
+
+                self.Banner = jQuery.extend(true, {}, banner.Banners[bannerId]);
+
+                appCommon.evalBindings(dialogSelector);
+
+                appCommon.showDialog(dialogSelector, event);
+            } else {
+                alert('No Banner Found!');
+            }
+        }
+
+        self.openMediaSelector = function (sender, event) {
+            //debugger;
+            self.refMediaElement = $(sender).children('[module = "media"]');
+            mediaSelector.showDialog(sender, event, bannerEditor.setSelectedMedia);
+        };
+
+        self.setSelectedMedia = function (selectedMedia) {
+            if (self.refMediaElement && self.refMediaElement.length && window.media) {
+                self.refMediaElement.attr('media-id', selectedMedia.Id);
+                appCommon.evalBackAttr(self.refMediaElement);
+                self.refMediaElement.attr('data-checked', 'false');
+                //window.media.Medias[selectedMedia.Id] = selectedMedia;
+                //$('.page-container [module="media"][media-id=' + selectedMedia.Id + ']').attr('data-checked', 'false');
+                //window.media.refresh(selectedMedia.Id);
+            }
+        }
+
+        self.typeChanged = function (sender) {
+            appCommon.evalBack(sender);
+            appCommon.evalBindings(dialogSelector);
+        }
+
+        self.cancel = function (sender) {
+            self.Banner = {};
+            appCommon.closeDialog(sender);
+        };
+
+        self.ok = function (sender) {
+            if (self.Banner) {
+                $.post("/api/Banner/PostBanner/", self.Banner)
+                    .done(function (data) {
+                        bannerEditor.Banner = data;
+                        self.refElement.attr('module-id', bannerEditor.Banner.Id);
+
+                        //refreshing media
+                        banner.Banners[bannerEditor.Banner.Id] = bannerEditor.Banner;
+                        appCommon.evalBindings(self.refElement); //or we can just set its data-checked to false!
+                        //self.refElement.attr('data-checked', 'false');
+                        //appCommon.recheckElement(self.refElement);
+
+                        bannerEditor.cancel(sender);
+                    }).fail(function (data) {
+                        debugger;
+                        alert("banner.postBanner() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        return self;
+    };
+
+    var bannerEditor = new BannerEditor();
+</script>

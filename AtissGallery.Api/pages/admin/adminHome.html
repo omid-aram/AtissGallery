@@ -1,0 +1,58 @@
+﻿<div id="admin-home-buttons" class="bx-bar padding-9-0">
+    <button class="btn-flat" onclick="adminHome.showPageBannerEditor(this, event)"><i class="fa fa-edit" aria-hidden="true"></i><span data-bind="text: Strings('page-banner-management')"></span></button>
+    <div class="bx-spacer"></div>
+    <button class="btn-flat" onclick="adminHome.showMenuEditor(this, event)"><i class="fa fa-bars" aria-hidden="true"></i><span data-bind="text: Strings('menu-management')"></span></button>
+</div>
+<div class="atiss-admin-home">
+</div>
+
+<script type="text/javascript">
+    function AdminHome() {
+        var self = this;
+
+        self.init = function () {
+            if (!app.user.isAuthenticated) {
+                appCommon.goHome();
+            }
+
+            appCommon.loadHtml('.atiss-admin-home', 'pages/home.html', function () {
+                appCommon.fetchModules(['pageBannerEditor', 'bannerEditor', 'menuEditor']);
+
+                //appCommon.recheckAllElements();
+            });
+
+            appCommon.evalBindings('#admin-home-buttons');
+        }
+
+        self.showPageBannerEditor = function (sender, event) {
+            if (window['home'] && window['banner']) {
+                pageBannerEditor.showDialog(sender, event, 'home', 1, adminHome.refreshPage);
+            }
+        };
+
+        self.showMenuEditor = function (sender, event) {
+            if (window['menuEditor']) {
+                window['menuEditor'].showDialog(sender, event, adminHome.refreshMenus);
+            }
+        };
+
+        self.refreshPage = function () {
+            //debugger;
+            appCommon.evalBindings('.atiss-admin-home');
+        };
+
+        self.refreshMenus = function () {
+            //debugger;
+            appCommon.evalBindings('.atiss-header');
+            appCommon.evalBindings('.atiss-footer');
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var adminHome = new AdminHome();
+
+    var _pageTitle = Strings('brand-title') + ' - ' + Strings('admin-control-panel');
+</script>

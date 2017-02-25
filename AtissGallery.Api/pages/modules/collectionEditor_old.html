@@ -1,0 +1,190 @@
+﻿<div class="bx-pos-absolute bx-pos-top-far" module="collectionEditor" editor-of="collection" data-checked="true">
+    <button class="btn-flat" onclick="collectionEditor.showDialog(this, event)"><i class="fa fa-address-card" aria-hidden="true"></i></button>
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="collectionEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('collection-editor')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+        <div class="bx-bar">
+            <module type="mediaSelector"></module>
+            <div class="bx-xxs-1-1 bx-sm-1-2">
+                <span class="bx-fill" data-bind="text: Strings('header-media')"></span>
+                <div class="bx-bar border-whitesmoke-1 min-height-50" onclick="collectionEditor.openMediaSelector(this, event)">
+                    <module type="media" view-mode="image-only" data-attr="media-id: collectionEditor.Collection.HeaderMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                </div>
+            </div>
+            <div class="bx-xxs-1-1 bx-sm-1-2">
+                <span class="bx-fill" data-bind="text: Strings('cover-media')"></span>
+                <div class="bx-bar border-whitesmoke-1 min-height-50" onclick="collectionEditor.openMediaSelector(this, event)">
+                    <module type="media" view-mode="image-only" data-attr="media-id: collectionEditor.Collection.CoverMediaId" data-bind="attr: {'data-checked': ''}"></module>
+                </div>
+            </div>
+        </div>
+        <div class="bx-spacer"></div>
+        <div class="bx-bar tab-container">
+            <div>
+                <span class="padding-3-6 backcolor-whitesmoke selected" data-bind="text: Strings('text-fa')" onclick="appCommon.selectTab(this)" tab-selector="#tabFa"></span>
+                <span class="padding-3-6 backcolor-whitesmoke" data-bind="text: Strings('text-en')" onclick="appCommon.selectTab(this)" tab-selector="#tabEn"></span>
+            </div>
+            <div class="bx-bar padding-9 border-whitesmoke-1 tab-page" id="tabFa">
+                <div class="bx-bar">
+                    <span class="bx-fill" data-bind="text: Strings('collection-name')"></span>
+                    <input type="text" data-bind="val: collectionEditor.Collection.NameFa" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-spacer"></div>
+                <module type="textEditor" content-selector="#myContentFa"></module>
+                <div id="myContentFa" class="bx-fill border-whitesmoke-1 min-height-50" data-bind="html: collectionEditor.Collection.TextFa" onchange="appCommon.evalBack(this)"></div>
+            </div>
+            <div class="bx-bar padding-9 border-whitesmoke-1 tab-page" id="tabEn">
+                <div class="bx-bar">
+                    <span class="bx-fill" data-bind="text: Strings('collection-name')"></span>
+                    <input type="text" data-bind="val: collectionEditor.Collection.NameEn" onchange="appCommon.evalBack(this)" />
+                </div>
+                <div class="bx-spacer"></div>
+                <module type="textEditor" content-selector="#myContentEn"></module>
+                <div id="myContentEn" class="bx-fill border-whitesmoke-1 min-height-50" data-bind="html: collectionEditor.Collection.TextEn" onchange="appCommon.evalBack(this)"></div>
+            </div>
+        </div>
+
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="collectionEditor.deleteCollection(this)"><i class="fa fa-minus-circle"></i></button>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat btn-flat-success bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="collectionEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="collectionEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function CollectionEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        self.Collection = {};
+        self.refElement;
+        self.refMediaElement;
+
+        self.callback = null;
+
+        var dialogSelector = '#collectionEditorDialog';
+
+        self.init = function () {
+            appCommon.fetchModules(['mediaSelector', 'media', 'textEditor']);
+
+            $(dialogSelector).find('.tab-container [tab-selector].selected').click();
+        }
+
+        self.checkModule = function (sender) {
+            $(sender).attr('data-checked', 'true');
+        };
+
+        self.showDialog = function (sender, event, callback) {
+            //debugger;
+            self.callback = callback;
+            self.refElement = $(sender).parents('[module = "collection"]');
+            var collectionId = self.refElement.attr('collection-id');
+            $(dialogSelector).attr('collection-id', collectionId);
+
+            self.Collection = {
+                Id: -1,
+                HeaderMediaId: -1,
+                CoverMediaId: -1,
+                NameFa: '',
+                NameEn: '',
+                TextFa: '',
+                TextEn: ''
+            };
+
+            if (collection.Collections[collectionId]) {
+                self.Collection = jQuery.extend(true, {}, collection.Collections[collectionId]);
+            }
+            appCommon.evalBindings(dialogSelector);
+
+            appCommon.showDialog(dialogSelector, event);
+
+            event.stopPropagation();
+        }
+
+        self.openMediaSelector = function (sender, event) {
+            //self.refMediaElement = sender;
+            self.refMediaElement = $(sender).children('[module = "media"]');
+            mediaSelector.showDialog(sender, event, collectionEditor.setSelectedMedia);
+        };
+
+        self.setSelectedMedia = function (selectedMedia) {
+            if (self.refMediaElement && self.refMediaElement.length && window.media) {
+                self.refMediaElement.attr('media-id', selectedMedia.Id);
+                appCommon.evalBackAttr(self.refMediaElement);
+                self.refMediaElement.attr('data-checked', 'false');
+            }
+        };
+
+        self.cancel = function (sender) {
+            self.Collection = {};
+            appCommon.closeDialog(sender);
+        };
+
+        self.ok = function (sender) {
+            if (self.Collection) {
+                $.post("/api/Collection/PostCollection/", self.Collection)
+                    .done(function (data) {
+                        collectionEditor.Collection.Id = data;
+                        self.refElement.attr('collection-id', collectionEditor.Collection.Id);
+
+                        //refreshing media
+                        collection.Collections[collectionEditor.Collection.Id] = collectionEditor.Collection;
+                        appCommon.evalBindings(self.refElement);
+
+                        if (window.collections) {
+                            window.collections.getNewerCollections();
+                        }
+
+                        collectionEditor.cancel(sender);
+                    }).fail(function (data) {
+                        debugger;
+                        alert("collectionEditor.postCollection() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.deleteCollection = function (sender) {
+            if (!self.Collection || self.Collection.Id < 0) {
+                alert('There is no collection to delete.');
+                return;
+            }
+
+            if (confirm('Are you sure to delete this collection?')) {
+
+                $.post("/api/Collection/DeleteCollection/", self.Collection)
+                    .done(function (data) {
+
+                        if (self.callback) {
+                            self.callback({});
+                        }
+
+                        $(self.refElement).parents('#loopItem').remove();
+
+                        collectionEditor.cancel(sender);
+
+                    }).fail(function (data) {
+                        debugger;
+                        alert("Collection cannot be deleted because it is maybe in use. \n\n\nFor more detail: \n" + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        return self;
+    };
+
+    var collectionEditor = new CollectionEditor();
+
+</script>

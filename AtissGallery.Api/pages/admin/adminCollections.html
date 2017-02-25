@@ -1,0 +1,85 @@
+﻿<div id="admin-collections-buttons" class="bx-bar padding-9-0">
+    <button class="btn-flat" onclick="adminCollections.showPageBannerEditor(this, event)"><i class="fa fa-edit" aria-hidden="true"></i><span data-bind="text: Strings('page-banner-management')"></span></button>
+</div>
+<div class="atiss-admin-collections">
+</div>
+
+<script type="text/javascript">
+    function AdminCollections() {
+        var self = this;
+
+        self.init = function () {
+            if (!app.user.isAuthenticated) {
+                appCommon.goHome();
+            }
+
+            appCommon.loadHtml('.atiss-admin-collections', 'pages/collections.html', function () {
+                appCommon.fetchModules(['pageBannerEditor', 'bannerEditor', 'menuEditor']);
+            });
+
+            appCommon.evalBindings('#admin-collections-buttons');
+        }
+
+        self.showPageBannerEditor = function (sender, event) {
+            //debugger;
+            if (window['collections'] && window['banner']) {
+                pageBannerEditor.showDialog(sender, event, 'collections', 2, adminCollections.refreshPage);
+            }
+        };
+
+        self.showMenuEditor = function (sender, event) {
+            if (window['menuEditor']) {
+                window['menuEditor'].showDialog(sender, event, adminCollections.refreshMenus);
+            }
+        };
+
+        self.refreshPage = function () {
+            //debugger;
+            appCommon.evalBindings('.atiss-admin-collections');
+        };
+
+        self.refreshMenus = function () {
+            //debugger;
+            appCommon.evalBindings('.atiss-header');
+            appCommon.evalBindings('.atiss-footer');
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var adminCollections = new AdminCollections();
+
+    var _pageTitle = Strings('brand-title') + ' - ' + Strings('admin-control-panel');
+</script>
+
+<!--<div class="padding-9-0">
+    <button class="btn-flat" onclick="collectionEditor.showDialog(this, event)"><i class="fa fa-plus-circle" aria-hidden="true"></i>ایجاد مجموعه جدید</button>
+</div>
+<div class="atiss-admin-collections">
+</div>
+
+<script type="text/javascript">
+    function AdminCollections() {
+        var self = this;
+
+        self.init = function () {
+            if (!app.user.isAuthenticated) {
+                appCommon.goHome();
+            }
+
+            appCommon.loadHtml('.atiss-admin-collections', 'pages/collections.html', function () {
+                appCommon.fetchModules(['bannerEditor', 'collectionEditor']);
+
+                //appCommon.recheckAllElements();
+            });
+        }
+
+        self.init();
+
+        return self;
+    }
+
+    var adminCollections = new AdminCollections();
+</script>-->

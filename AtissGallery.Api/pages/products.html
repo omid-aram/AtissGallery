@@ -1,0 +1,338 @@
+﻿<div class="atiss-products" page-id="3">
+    <!--<module type="banner" banner-id="5"></module>-->
+    <div class="atiss-products-banners bx-bar" data-loop="products.PageBannerIds">
+        <module data-loop-template="true" type="banner" data-attr="banner-id: #item :: data-checked: 'false'"></module>
+    </div>
+
+    <div class="bx-bar" id="productList">
+        <div class="bx-bar" data-loop-keep="products.TempProducts">
+            <!--<div data-template="true">-->
+            <div data-loop-template="true" class="bx-xxs-1-2 bx-sm-1-5 bx-wrapper bx-ratio-1-1" id="loopItem" data-bind-once="attr: {'product-json': JSON.stringify(#item), 'data-loop-item': 'true'}">
+                <div class="bx-bar background-image-cover border-white-1">
+                    <a href="/" target="_blank" data-attr-once="href: products.getItemUrl(this, #item.Code)"></a>
+                    <module type="productThumbnail" data-attr-once="product-code: #item.Code :: data-checked: ''" onclick="products.openProduct(this)"></module>
+                </div>
+            </div>
+            <!--</div>-->
+        </div>
+    </div>
+</div>
+<!--<div class="product-page">
+    <module type="product" view-mode="full"></module>
+</div>-->
+
+<script type="text/javascript">
+    function Products() {
+        var self = this;
+
+        //self.TempProducts = [];
+
+        //self.firstId = -1;
+        //self.lastId = -1;
+        //self.isFetching = false;
+        //self.lastScrollTop = 0;
+
+        //var TempBanners = [];
+        //self.PageBannerIds = [];
+
+        //self.pageId = 3;
+        //self.labelId = 0;
+        //self.labelName = null;
+        //self.labelValue = '';
+
+        self.init = function () {
+            //debugger;
+            self.TempProducts = [];
+
+            self.firstId = -1;
+            self.lastId = -1;
+            self.isFetching = false;
+            self.lastScrollTop = 0;
+
+            var TempBanners = [];
+            self.PageBannerIds = [];
+
+            self.pageId = 3;
+            self.labelId = 0;
+            //self.labelName = null;
+            self.labelValue = '';
+
+            appCommon.fetchModules(['banner', 'productThumbnail']);
+
+            $(document).off('scroll');
+
+            //var productId = document.location.href.split('/products/')[1];
+
+            //if (productId) {
+            //    self.lastScrollTop = $(document).scrollTop();
+            //    $('.atiss-products').hide();
+
+            //    //var $productPage = $('.product-page');
+            //    //$productPage.show();
+
+            //    $('.product-page').attr('product-id', productId);
+
+            //    self.loadProductPage();
+
+            //} else {
+            //$('.atiss-products').show();
+            //$('.product-page').hide();
+
+            //$(document).scrollTop(self.lastScrollTop);
+            self.TempProducts = [];
+            $('#productList [data-loop-item]').remove();
+
+            ////appCommon.recheckAllElements();
+            //}
+            var urlLabelValue = document.location.href.split('/products/')[1];
+            var urlLabelValueArray = [];
+            if (urlLabelValue) {
+                //urlLabelValueArray = urlLabelValue.split('/');
+                urlLabelValueArray = urlLabelValue.split('?');
+            }
+            if (urlLabelValueArray.length > 0) {
+                //self.labelName = urlLabelValueArray[0];
+                //self.labelValue = urlLabelValueArray[1];
+                self.labelValue = urlLabelValueArray[0];
+
+                $.post("/api/Product/FindLabelPage/", { /*NameEn: self.labelName, LabelValue: self.labelValue*/ Value: self.labelValue })
+                    .done(function (data) {
+                        setPageFilter(data);
+                        loadPageProducts();
+                    })
+                    .fail(function (data) {
+                        debugger;
+                        alert("products.FindLabelPage() Fail: " + data.message);
+                    });
+            } else {
+                setPageFilter({
+                    Id: 3,
+                    KeyCode: null
+                });
+                loadPageProducts();
+            }
+        };
+
+        self.checkScroll = function () {
+            //debugger;
+            var windowHeight = $(window).height();
+            var scrollHeight = $(document).height();
+            if (scrollHeight <= windowHeight || ($(document).scrollTop() + windowHeight) > (scrollHeight - windowHeight)) {
+                products.fetchOlderProducts();
+            }
+        }
+
+        var fetchPageBanners = function () {
+            var pageId = $('.atiss-products').attr('page-id');
+
+            $.get("/api/Banner/GetPageBanners/" + pageId)
+                .done(function (data) {
+                    TempBanners = data;
+                    loadBanners();
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("products.getPageBanners() Fail: " + data.message);
+                });
+        };
+
+        var loadPageProducts = function () {
+            fetchPageBanners();
+
+            if (self.lastId < 0) {
+                self.fetchOlderProducts();
+            }
+
+            $(document).on('scroll', self.checkScroll);
+        };
+
+        var loadBanners = function () {
+            //debugger;
+            if (!window['banner']) {
+                setTimeout(loadBanners, 100);
+                return;
+            }
+
+            for (var i = 0; i < TempBanners.length; i++) {
+                products.PageBannerIds.push(TempBanners[i].Id);
+                window['banner'].Banners[TempBanners[i].Id] = TempBanners[i];
+            }
+
+            appCommon.evalBindings('.atiss-products-banners');
+        }
+
+        var setPageFilter = function (page) {
+            var prods = self || products;
+
+            prods.pageId = page.Id;
+            prods.keyCode = page.KeyCode;
+
+            $productPage = $('.atiss-products');
+            $productPage.attr('page-id', prods.pageId);
+            $productPage.attr('keycode', prods.keyCode);
+        };
+
+        self.getCoverMediaId = function (sender) {
+            //debugger;
+            var productId = $(sender).parents('[module="product"]').attr('product-id');
+
+            if (self.Products[productId]) {
+                return self.Products[productId].CoverMediaId;
+            } else {
+                return -1;
+            }
+        };
+
+        var exportFetchedProducts = function () {
+            if (window.productThumbnail) {
+                for (var i = 0; i < self.TempProducts.length; i++) {
+                    var _product = self.TempProducts[i];
+                    if (!window.productThumbnail.Products[_product.Code]) {
+                        window.productThumbnail.Products[_product.Code] = _product;
+                    }
+                }
+            }
+        }
+
+        //self.loadProductPage = function () {
+        //    if (!window.product) {
+        //        setTimeout(self.loadProductPage, 100);
+        //        return;
+        //    }
+
+        //    var $productPage = $('.product-page');
+        //    var productId = $productPage.attr('product-id');
+        //    var $productModule = $productPage.children('[module="product"]');
+
+        //    //debugger;
+        //    if ($productModule.length) {
+        //        $productModule.attr('product-id', productId);
+
+        //        if (!window.product.Products[productId] || !window.product.Products[productId].IsFull) {
+        //            window.product.fetchFullProduct(productId, products.fullProductFetched);
+        //        } else {
+        //            products.fullProductFetched();
+        //        }
+
+        //        //appCommon.evalBindings($productModule);
+        //        //appCommon.recheckElement($productModule);
+        //    } else {
+        //        setTimeout(self.loadProductPage, 100);
+        //        return;
+        //    }
+        //};
+
+        //self.fullProductFetched = function () {
+        //    var $productPage = $('.product-page');
+        //    var productId = $productPage.attr('product-id');
+        //    window.product.FullProduct = window.product.Products[productId];
+
+        //    appCommon.evalBindings($productPage);
+        //    appCommon.recheckElement('.product-page [module="product"]');
+
+        //    $productPage.show();
+        //};
+
+        self.fetchOlderProducts = function () {
+            if (self.lastId == 0 || self.isFetching) return;
+
+            //debugger;
+            self.isFetching = true;
+            $('.loading-panel').show();
+
+            $.post("/api/Product/FetchOlderProducts/", { Id: self.lastId, KeyCode: self.keyCode })
+                  .done(function (list) {
+                      //debugger;
+                      if (list.length == 0) {
+                          self.lastId = 0;//To prevent rechecking older items when we know there is nothing!
+                          return;
+                      }
+
+                      if (self.lastId < 0 || list[list.length - 1]["Id"] < self.lastId) {
+                          self.lastId = list[list.length - 1]["Id"];
+                      }
+                      if (self.firstId < 0 || list[0]["Id"] > self.firstId) {
+                          self.firstId = list[0]["Id"];
+                      }
+
+                      self.TempProducts = list;
+                      exportFetchedProducts();
+                      appCommon.evalBindings('#productList');
+
+                      self.checkScroll();
+                  })
+                  .fail(function () {
+                      //alert("error");
+                  })
+                  .always(function () {
+                      self.isFetching = false;
+                      $('.loading-panel').hide();
+                  });
+        };
+
+        self.fetchNewerProducts = function () {
+            if (self.isFetching) return;
+            self.isFetching = true;
+            $('.loading-panel').show();
+
+            //jQuery.support.cors = true;
+            $.post("/api/Product/FetchNewerProducts/", { Id: self.firstId, LabelId: self.labelId, LabelValue: self.labelValue })
+                  .done(function (list) {
+                      //debugger;
+                      if (list.length > 0) {
+                          if (self.lastId < 0 || list[list.length - 1]["Id"] < self.lastId) {
+                              self.lastId = list[list.length - 1]["Id"];
+                          }
+                          if (self.firstId < 0 || list[0]["Id"] > self.firstId) {
+                              self.firstId = list[0]["Id"];
+                          }
+                      }
+                      self.TempProducts = list;
+                      exportFetchedProducts();
+                      appCommon.evalBindings('#productList', true);
+                      appCommon.setAnchorsClick();
+                  })
+                  .fail(function () {
+                  })
+                  .always(function () {
+                      self.isFetching = false;
+                      $('.loading-panel').hide();
+                  });
+        };
+
+        self.getItemUrl = function (sender, id) {
+            //var href = $(sender).attr('href');
+            //href = href.substring(0, href.length - 1);
+            return appCommon.getFixedUrl('product/' + id);
+        };
+
+        self.openProduct = function (sender) {
+            var $anchor = $(sender).parent().children('a');
+            var href = $anchor.attr('href');
+            //$anchor.click();
+            window.open(href);
+        };
+
+        //self.checkHashTag = function () {
+        //    debugger;
+        //    if (document.location.hash) {
+        //        $('.atiss-products').hide();
+        //        $('.product-page').show();
+        //    } else {
+        //        $('.atiss-products').show();
+        //        $('.product-page').hide();
+        //    }
+        //};
+
+        self.init();
+
+        return self;
+    }
+
+    var products = new Products();
+
+    //$(window).on('hashchange', function () {
+    //    products.checkHashTag();
+    //});
+
+</script>

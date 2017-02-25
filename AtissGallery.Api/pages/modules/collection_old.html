@@ -1,0 +1,74 @@
+﻿<div module="collection" class="bx-fill">
+    <module type="media" data-attr="media-id: collection.getCoverMediaId(this)"></module>
+</div>
+
+<script type="text/javascript">
+    function Collection() {
+        var self = this;
+
+        self.Collections = {};
+        self.isFetching = false;
+
+        self.init = function () {
+            appCommon.fetchModules(['media']);
+        };
+
+        self.getCoverMediaId = function (sender) {
+            //debugger;
+            var collectionId = $(sender).parents('[module="collection"]').attr('collection-id');
+
+            if (self.Collections[collectionId]) {
+                return self.Collections[collectionId].CoverMediaId;
+            } else {
+                return -1;
+            }
+        };
+
+        self.fetchCollections = function () {
+            if (self.isFetching) return;
+
+            var ids = [];
+            $('[module="collection"]').each(function () {
+                var $this = $(this);
+                var id = parseInt($this.attr('collection-id'));
+                if (!isNaN(id) && !self.Collections[id] && ids.indexOf(id) < 0) {
+                    ids.push(id);
+                }
+            });
+
+            if (ids.length > 0) {
+                self.isFetching = true;
+                $.post("/api/Collection/FetchCollections", { Ids: ids })
+                    .done(function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            var id = data[i]['Id'];
+                            collection.Collections[id] = data[i];
+                        }
+                    }).fail(function (data) {
+                        debugger;
+                        alert("collection.fetchCollections() Fail: " + data.message);
+                    }).always(function () {
+                        self.isFetching = false;
+                    });;
+            }
+        };
+
+        self.checkModule = function (sender) {
+
+            var $sender = $(sender);
+            var id = parseInt($sender.attr('collection-id'));
+
+            if (self.Collections[id]) {
+                appCommon.evalBindings($sender);
+                $sender.attr('data-checked', 'true');
+
+            } else {
+                self.fetchCollections();
+            }
+        };
+
+        return self;
+    }
+
+    var collection = new Collection();
+</script>

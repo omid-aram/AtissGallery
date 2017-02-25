@@ -1,0 +1,184 @@
+﻿<div class="atiss-collections bx-bar" page-id="2" data-loop="collections.PageBannerIds">
+    <module data-loop-template="true" type="banner" data-attr="banner-id: #item :: data-checked: 'false'"></module>
+</div>
+
+<script type="text/javascript">
+    function Collections() {
+        var self = this;
+        var TempBanners = [];
+
+        self.PageBannerIds = [];
+
+        self.init = function () {
+            appCommon.fetchModules(['banner']);
+
+            var pageId = $('.atiss-collections').attr('page-id');
+
+            $.get("/api/Banner/GetPageBanners/" + pageId)
+                .done(function (data) {
+                    TempBanners = data;
+                    loadBanners();
+                })
+                .fail(function (data) {
+                    debugger;
+                    alert("collections.getPageBanners() Fail: " + data.message);
+                });
+
+            $(document).off('scroll');
+        };
+
+        var loadBanners = function () {
+            if (!window['banner']) {
+                setTimeout(loadBanners, 100);
+                return;
+            }
+
+            for (var i = 0; i < TempBanners.length; i++) {
+                collections.PageBannerIds.push(TempBanners[i].Id);
+                window['banner'].Banners[TempBanners[i].Id] = TempBanners[i];
+            }
+
+            appCommon.evalBindings('.atiss-collections');
+        }
+
+        self.init();
+
+        return self;
+    }
+
+    var collections = new Collections();
+
+    var _pageTitle = Strings('brand-title');// + ' - ' + strings('menu-home');
+</script>
+
+<!--<div class="atiss-collections" page-id="2">
+    <module type="banner" banner-id="4"></module>
+
+    <div class="bx-bar" id="collectionList">
+        <div class="bx-bar" data-loop-keep="collections.TempCollections">
+                <div data-loop-template="true" class="bx-xxs-1-1 bx-sm-1-3 bx-wrapper bx-ratio-1-1" id="loopItem" data-bind-once="attr: {'collection-json': JSON.stringify(#item)}">
+                    <div class="bx-bar background-image-cover border-white-1">
+                        <module type="collection" data-attr-once="collection-id: #item.Id :: data-checked: ''"></module>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function Collections() {
+        var self = this;
+
+        self.TempCollections = [];
+
+        self.firstId = -1;
+        self.lastId = -1;
+        self.isFetching = false;
+
+        self.init = function () {
+            //debugger;
+            appCommon.fetchModules(['banner', 'collection']);
+
+            self.TempCollections = [];
+
+            if (self.lastId < 0) {
+                self.getOlderCollections();
+            }
+
+            //appCommon.recheckAllElements();
+
+            $(document).off('scroll');
+            $(document).on('scroll', self.checkScroll);
+        };
+
+        self.checkScroll = function () {
+            //debugger;
+            var windowHeight = $(window).height();
+            var scrollHeight = $(document).height();
+            if (scrollHeight <= windowHeight || ($(document).scrollTop() + windowHeight) > (scrollHeight - windowHeight)) {
+                collections.getOlderCollections();
+            }
+        }
+
+        var exportFetchedCollections = function () {
+            if (window.collection) {
+                for (var i = 0; i < self.TempCollections.length; i++) {
+                    var _collection = self.TempCollections[i];
+                    window.collection.Collections[_collection.Id] = _collection;
+                }
+            }
+        }
+
+        self.getOlderCollections = function () {
+            if (self.lastId == 0 || self.isFetching) return;
+
+            self.isFetching = true;
+            $('.loading-panel').show();
+
+            $.ajax("/api/Collection/GetOlderCollections/" + self.lastId)
+                  .done(function (list) {
+                      //debugger;
+                      if (list.length == 0) {
+                          self.lastId = 0;//To prevent rechecking older items when we know there is nothing!
+                          return;
+                      }
+
+                      if (self.lastId < 0 || list[list.length - 1]["Id"] < self.lastId) {
+                          self.lastId = list[list.length - 1]["Id"];
+                      }
+                      if (self.firstId < 0 || list[0]["Id"] > self.firstId) {
+                          self.firstId = list[0]["Id"];
+                      }
+
+                      self.TempCollections = list;
+                      exportFetchedCollections();
+                      appCommon.evalBindings('#collectionList');
+
+                      self.checkScroll();
+                  })
+                  .fail(function () {
+                      //alert("error");
+                  })
+                  .always(function () {
+                      self.isFetching = false;
+                      $('.loading-panel').hide();
+                  });
+        };
+
+        self.getNewerCollections = function () {
+            if (self.isFetching) return;
+            self.isFetching = true;
+            $('.loading-panel').show();
+
+            //jQuery.support.cors = true;
+            $.ajax("/api/Collection/GetNewerCollections/" + self.firstId)
+                  .done(function (list) {
+                      //debugger;
+                      if (list.length > 0) {
+                          if (self.lastId < 0 || list[list.length - 1]["Id"] < self.lastId) {
+                              self.lastId = list[list.length - 1]["Id"];
+                          }
+                          if (self.firstId < 0 || list[0]["Id"] > self.firstId) {
+                              self.firstId = list[0]["Id"];
+                          }
+                      }
+                      self.TempCollections = list;
+                      exportFetchedCollections();
+                      appCommon.evalBindings('#collectionList', true);
+                  })
+                  .fail(function () {
+                  })
+                  .always(function () {
+                      self.isFetching = false;
+                      $('.loading-panel').hide();
+                  });
+        };
+
+        self.init();
+
+        return self;
+    }
+
+    var collections = new Collections();
+
+</script>-->

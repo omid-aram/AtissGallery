@@ -1,0 +1,42 @@
+﻿<div module="mediaSelector" data-checked="true">
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="mediaSelectorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <div class="bx-fill">
+            <div class="bx-bar">
+                <img src="design/loading.gif" alt="Loading..." class="loading-image height-24" />
+                <span data-bind="text: Strings('media-selector')" class="padding-6-9"></span>
+            </div>
+        </div>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body">
+        <div class="bx-bar" data-loop-keep="mediaSelector.TempMedias">
+            <!--<div data-template="true">-->
+                <div data-loop-template="true" class="bx-xxs-1-3 bx-md-1-6 bx-wrapper bx-ratio-1-1 mouse-hover-sky">
+                    <div class="bx-bar background-image-cover border-white-1" id="loopItem" data-bind-once="attr: {'media-json': JSON.stringify(#item)} :: css: {'background-image': 'url(\'' + #item.MediaFiles[0].File.Cover + '\')'}"
+                         onclick="mediaSelector.selectMedia(this)">
+                        <div data-if="#item.MediaFiles[0].File.ContentType == 'video/mp4'">
+                            <div class="bx-pos-absolute bx-pos-top-right"><i class="fa fa-video-camera bx-whitesmoke" aria-hidden="true"></i></div>
+                        </div>
+                        <div class="bx-pos-absolute bx-pos-top-left">
+                            <!--<button onclick="mediaSelector.deleteMedia(this, event)" data-attr-once="media-id: #item.Id"><i class="fa fa-minus-circle" aria-hidden="true"></i></button>-->
+                            <button class="btn-flat" onclick="mediaSelector.editMedia(this, event)" data-attr-once="media-id: #item.Id"><i class="fa fa-wrench" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                </div>
+            <!--</div>-->
+        </div>
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+            <button class="btn-flat" onclick="mediaSelector.addMedia(this, event)" media-id="-1"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+        </div>
+        <div class="bx-bar width-120">
+            <button class="btn-flat bx-xxs-1-1" data-bind="text: Strings('button-cancel')" onclick="appCommon.closeDialog(this)"></button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="js/modules/mediaSelector.js"></script>

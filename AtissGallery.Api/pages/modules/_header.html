@@ -1,0 +1,159 @@
+<div class="atiss-header bx-padding-x1">
+    <div class="bx-hidden-to-sm">
+        <div class="bx-fix">
+            <div class="height-120 padding-top-60">
+                <div class="bx-fix height-35 height-to-children width-180 bx-whitesmoke">
+                    <input type="text" class="bx-fill-wh bx-glass" data-bind="attr: {placeholder: Strings('search')}" />
+                    <span>
+                        <button type="button" class="bx-glass height-35">
+                            <i class="fa fa-search" aria-hidden="true"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div class="bx-fill-wh bx-text-center">
+                <img class="height-120" alt="Atiss" src="design/logo.png" />
+            </div>
+            <div class="bx-bar width-180 height-120 padding-top-60">
+                <!--<a class="width-180"><i class="fa fa-user-o" aria-hidden="true"></i>&nbsp<span data-bind="text: app.user.fullName"></span></a>
+                <a><i class="fa fa-shopping-cart" aria-hidden="true"></i> سبد خرید</a>-->
+                <a href="tel: 0912-494-6108" target="_blank" class="btn-support width-180 height-35"><i class="fa fa-phone" aria-hidden="true"></i>&nbsp<span data-bind="text: Strings('support-phone')"></span></a>
+            </div>
+        </div>
+        <div class="bx-text-center sub-menu-collector font-x11">
+            <div data-loop="_header.MainMenus" data-attr="col-count: _header.MainMenus.length :: class: 'bx-bar bx-md-' + _header.MainMenus.length + '-' + parseInt(_header.MainMenus.length*1.4)">
+                <div data-loop-template="true" data-attr="col-no: #item.ColNo" data-bind="do: _header.setItemColumn(this)">
+                    <a href="#" data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa) :: attr: { href: appCommon.getFixedUrl(#item.Address) }"></a>
+                    <a data-bind="css: {display: #item.SubMenus.length ? '' : 'none'}" onclick="_header.popupHeaderMenu(this, event)" data-attr="popup: '#headerSubMenu' + #item.Id" position="down" class="width-35"><i class="fa fa-caret-down" aria-hidden="true"></i></a>
+                    <div class="popup-menu" data-attr="id: 'headerSubMenu' + #item.Id">
+                        <div class="bx-bar">
+                            <div data-attr="class: 'bx-text-near' + (#item.MediaId > 0 ? ' bx-sm-2-5' : ' bx-sm-1-1')">
+                                <a data-bind="attr: { href: appCommon.getFixedUrl(#item.Address) }"><h3 data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa)"></h3></a>
+                                <div class="font-x08"><span data-bind="text: (appCommon.getLanguage() == 'en' ? #item.SubTitleEn : #item.SubTitleFa)"></span></small></div>
+                                <div data-attr="class: 'bx-bar padding-top-15 inner-menu' :: col-count: _header.setColCount(this, #item.SubMenus)" data-bind="do: appCommon.doRepeatLoopTemplate(this, '#item.SubMenus')"></div>
+                            </div>
+                            <div data-if="#item.MediaId > 0">
+                                <div class="bx-sm-3-5">
+                                    <a data-bind="attr: { href: appCommon.getFixedUrl(#item.Address) }"><module type="media" data-attr="media-id: #item.MediaId :: data-checked: 'false'"></module></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="header-bottom-line"></div>
+    </div>
+    <div class="bx-fix bx-hidden-from-sm side-menu-header">
+        <button class="btn-flat" onclick="appCommon.showSideMenu(this, event)"><i class="fa fa-bars fa-2x"></i></button>
+        <h3 class="bx-fill bx-vertical-middle padding-0-9" data-bind="text: Strings('brand-title')"></h3>
+        <!--<button class="btn-flat font-x14">--><a href="tel: 0912-494-6108" target="_blank" class="btn-flat font-x14 bx-fill padding-12"><i class="fa fa-phone" aria-hidden="true"></i></a><!--</button>-->
+        </div>
+    <div class="side-menu bx-hidden font-x11">
+        <div data-loop="_header.MainMenus" class="bx-bar">
+            <div data-loop-template="true" class="bx-fix">
+                <div class="bx-fill bx-vertical-middle padding-6-9">
+                    <a class="bx-fill" href="" data-bind="text: (appCommon.getLanguage() == 'en' ? #item.TitleEn : #item.TitleFa) :: attr: { href: appCommon.getFixedUrl(#item.Address) }"></a>
+                </div>
+                <!--<a href="" data-bind="css: {display: #item.SubMenus.length ? '' : 'none'}" data-attr="onclick: $('#sideSubMenu' + #item.Id).toggle()" class="width-35"><i class="fa fa-caret-down" aria-hidden="true"></i></a>-->
+                <div class="width-35">
+                    <button class="btn-flat width-35" data-bind="css: {display: #item.SubMenus.length ? '' : 'none'} :: attr: {'side-submenu': '#sideSubMenu' + #item.Id}" onclick="_header.showSideSubMenu(this, event)">
+                        <i class="fa fa-caret-down" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="bx-hidden" data-attr="id: 'sideSubMenu' + #item.Id">
+                    <div class="bx-bar" data-bind="do: appCommon.doRepeatLoopTemplate(this, '#item.SubMenus')"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function _Header() {
+        var self = this;
+
+        self.MainMenus = [];
+
+        self.init = function () {
+            self.MainMenus = [];
+
+            for (var i = 0; i < app.Menus.length; i++) {
+                if (app.Menus[i].MenuType == 1) {
+                    self.MainMenus.push(app.Menus[i]);
+                }
+            }
+            appCommon.evalBindings('.atiss-header');
+        }
+
+        self.setColCount = function (sender, menus) {
+            var result = 1;
+            for (var i = 0; i < menus.length; i++) {
+                if (menus[i].ColNo > result) {
+                    result = menus[i].ColNo;
+                }
+            }
+            return result;
+        };
+
+        self.setItemColumn = function (sender) {
+            var $sender = $(sender);
+            var $parent = $sender.parent();
+            var colCount = parseInt($parent.attr('col-count'));
+            if ($parent.hasClass('inner-menu')) {
+                for (var i = 1; i <= colCount; i++) {
+                    if ($parent.children('.inner-col-' + i).length == 0) {
+                        $parent.append("<div class='bx-sm-1-" + colCount + " inner-col-" + i + "'></div>");
+                    }
+                }
+
+                var colNo = $sender.attr('col-no');
+                var $column = $parent.children('.inner-col-' + colNo);
+                $column.append($sender);
+                $sender.addClass(' bx-xs-1-1');
+            }
+            else {
+                $sender.addClass(' bx-xs-1-' + colCount);
+            }
+        };
+
+        self.popupHeaderMenu = function (sender, event) {
+            event.stopPropagation();
+
+            var $sender = $(sender);
+            var $caretButton = $sender.children('.fa');
+
+            appCommon.popupMenu(sender, event);
+        };
+
+        self.showSideSubMenu = function (sender, event) {
+            var $sender = $(sender);
+            var $sideSubMenu = $($sender.attr('side-submenu'));
+            var $caretButton = $sender.children('.fa');
+            if ($sideSubMenu.css('display') == 'none') {
+                $sideSubMenu.show();
+                $caretButton.removeClass('fa-caret-down');
+                $caretButton.addClass('fa-caret-up');
+            }
+            else {
+                $sideSubMenu.hide();
+                $caretButton.removeClass('fa-caret-up');
+                $caretButton.addClass('fa-caret-down');
+            }
+
+            event.stopPropagation();
+        };
+
+        //self.menus = [
+        //    { name: 'menu-home', href: 'home/' },
+        //    { name: 'menu-collections', href: 'collections/' },
+        //    { name: 'menu-products', href: 'products/' },
+        //    { name: 'menu-blog', href: 'blog/' },
+        //    { name: 'menu-about', href: 'about/' }
+        //];
+
+        return self;
+    }
+
+    var _header = new _Header();
+</script>

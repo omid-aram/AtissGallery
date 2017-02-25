@@ -1,0 +1,53 @@
+﻿<div id="admin-products-buttons" class="bx-bar padding-9-0">
+    <button class="btn-flat" onclick="adminProducts.showPageBannerEditor(this, event)"><i class="fa fa-edit" aria-hidden="true"></i><span data-bind="text: Strings('page-banner-management')"></span></button>
+    <div class="bx-spacer"></div>
+    <button class="btn-flat" onclick="productEditor.showDialog(this, event)"><i class="fa fa-plus-circle" aria-hidden="true"></i><span data-bind="text: Strings('new-product')"></span></button>
+    <div class="bx-spacer"></div>
+    <button class="btn-flat" onclick="labelEditor.showDialog(this, event)"><i class="fa fa-tags" aria-hidden="true"></i><span data-bind="text: Strings('label-management')"></span></button>
+</div>
+<div class="atiss-admin-products">
+</div>
+
+<script type="text/javascript">
+    function AdminProducts() {
+        var self = this;
+
+        self.init = function () {
+            if (!app.user.isAuthenticated) {
+                appCommon.goHome();
+            }
+
+            appCommon.loadHtml('.atiss-admin-products', 'pages/products.html', function () {
+                appCommon.fetchModules(['pageBannerEditor', 'bannerEditor', 'productEditor', 'labelEditor']);
+
+                //appCommon.recheckAllElements();
+            });
+
+            appCommon.evalBindings('#admin-products-buttons');
+        }
+
+        self.showPageBannerEditor = function (sender, event) {
+            //debugger;
+            if (window['products'] && window['banner']) {
+                pageBannerEditor.showDialog(sender, event, 'products', window['products'].pageId, adminProducts.refreshBanners);
+            }
+        };
+
+        self.refreshBanners = function () {
+            appCommon.evalBindings('.atiss-products-banners');
+        };
+
+        //self.refreshPage = function () {
+        //    //debugger;
+        //    self.refreshBanners();
+
+        //    appCommon.evalBindings('.atiss-admin-products');
+        //};
+
+        self.init();
+
+        return self;
+    }
+
+    var adminProducts = new AdminProducts();
+</script>

@@ -1,0 +1,71 @@
+﻿<div class="bx-pos-absolute bx-pos-top-far">
+    <button class="btn-flat" onclick="collectionListEditor.showDialog(this, '#collectionEditorDialog', event)"><i class="fa fa-address-card" aria-hidden="true"></i></button>
+</div>
+
+<div class="popup-dialog bx-sm-4-5 bx-xxs-1-1" id="collectionListEditorDialog">
+    <div class="popup-dialog-header bx-fix">
+        <span data-bind="text: Strings('collection-editor')" class="bx-fill padding-6-9"></span>
+        <button class="btn-flat-danger width-35" onclick="appCommon.closeDialog(this)"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="popup-dialog-body padding-9">
+
+    </div>
+    <div class="popup-dialog-footer bx-fix">
+        <div>
+        </div>
+        <div class="bx-bar width-270">
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-ok')" onclick="collectionListEditor.ok(this)"></button>
+            <button class="btn-flat bx-xxs-1-2" data-bind="text: Strings('button-cancel')" onclick="collectionListEditor.cancel(this)"></button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function CollectionListEditor() {
+        var self = this;
+
+        if (!app.user.isAuthenticated) {
+            appCommon.goHome();
+        }
+
+        appCommon.loadModules('', '#collectionListEditorDialog');
+
+        self.Collection = {};
+
+
+        self.cancel = function (sender) {
+            self.Banner = {};
+            appCommon.closeDialog(sender);
+        };
+
+        self.ok = function (sender) {
+            if (self.Banner) {
+                $.post("/api/Banner/PostBanner/", self.Banner)
+                    .done(function (data) {
+                        bannerEditor.Banner.Id = data;
+                        self.refElement.attr('module-id', bannerEditor.Banner.Id);
+
+                        //refreshing media
+                        banner.Banners[bannerEditor.Banner.Id] = bannerEditor.Banner;
+                        appCommon.evalBindings(self.refElement);
+
+                        banner.refresh(bannerEditor.Banner.Id);
+
+                        bannerEditor.cancel(sender);
+                    }).fail(function (data) {
+                        debugger;
+                        alert("banner.postBanner() Fail: " + JSON.stringify(data.responseText));
+                    });
+            }
+        };
+
+        self.init = function () {
+            //appCommon.appendActiveClasses(self);
+        }
+
+        return self;
+    };
+
+    var collectionListEditor = new CollectionListEditor();
+
+</script>
